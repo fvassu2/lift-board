@@ -1,0 +1,21 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">Tablet Dashboard for Forklift Operators</p>
+  </header>
+  
+  <main class="app-main">
+    <aside class="sidebar sidebar-left">
+      <app-vehicle-selector></app-vehicle-selector>
+      <app-mission-panel></app-mission-panel>
+    </aside>
+    
+    <section class="scene-section">
+      <app-scene-3d></app-scene-3d>
+    </section>
+    
+    <aside class="sidebar sidebar-right">
+      <app-rfid-validator></app-rfid-validator>
+    </aside>
+  </main>
+</div>

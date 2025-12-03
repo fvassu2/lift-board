@@ -1,0 +1,100 @@
+/* Tablet-optimized layout for warehouse dashboard */
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebar-left {
+  flex: 0 0 25%;
+  min-width: 280px;
+}
+
+.sidebar-right {
+  flex: 0 0 20%;
+  min-width: 250px;
+}
+
+.scene-section {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-width: 400px;
+}
+
+/* Responsive adjustments for smaller tablets */
+@media (max-width: 1024px) {
+  .app-main {
+    flex-direction: column;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    flex: 0 0 auto;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .scene-section {
+    flex: 1;
+    min-width: unset;
+    min-height: 400px;
+  }
+}
+
+/* Touch-friendly styles */
+@media (pointer: coarse) {
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+  }
+}
