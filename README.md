@@ -8,6 +8,8 @@ A modern Angular 19 application providing a tablet-optimized dashboard for wareh
 
 ### 3D Vehicle Visualization
 - **Three.js-powered 3D rendering** with real-time vehicle models
+- **External GLTF/GLB model support** - load professional 3D models from Sketchfab, TurboSquid, etc.
+- **Automatic fallback** to procedural geometry if external models not available
 - **Three vehicle types**: Forklift, Pallet Jack, and Stacker
 - **Multiple camera views**: Orbital, Top-down, First-person, and Side views
 - **Dynamic container rendering** - visualize stackable containers on vehicles
@@ -162,6 +164,48 @@ Use the camera control buttons in the 3D scene:
 1. Click **Complete** to mark the mission as finished
 2. Click **Cancel** to abort the mission
 3. The system resets and is ready for the next mission
+
+### Using Custom 3D Models
+
+The application supports loading professional GLTF/GLB 3D models for vehicles:
+
+1. **Download models** from sources like:
+   - [Sketchfab](https://sketchfab.com/) - Search for "forklift", "pallet jack", "stacker"
+   - [TurboSquid](https://www.turbosquid.com/)
+   - [CGTrader](https://www.cgtrader.com/)
+   - [Free3D](https://free3d.com/)
+
+2. **Convert to GLTF/GLB** format (if needed):
+   - Most sites offer GLTF download option
+   - Or use [Blender](https://www.blender.org/) to convert other formats
+   - GLB format is recommended (binary, smaller size)
+
+3. **Place in the models directory**:
+   ```
+   public/assets/models/
+   ├── forklift.glb
+   ├── pallet-jack.glb
+   └── stacker.glb
+   ```
+
+4. **Restart the development server**:
+   ```bash
+   npm start
+   ```
+
+**Model Requirements:**
+- **Format**: GLTF (.gltf) or GLB (.glb)
+- **Size**: Keep under 10MB for good performance
+- **Scale**: Models are auto-scaled to fit (approximately 3 units height)
+- **Textures**: Should be embedded (GLB) or in the same directory
+
+**Example from Sketchfab:**
+- Visit: https://skfb.ly/pE768 (or any forklift model)
+- Click "Download 3D Model" → Select "glTF"
+- Extract ZIP and rename to `forklift.glb`
+- Place in `public/assets/models/`
+
+**Fallback:** If external models aren't found, the app automatically uses the built-in procedural geometry, so it always works!
 
 ## 🔧 Building for Production
 

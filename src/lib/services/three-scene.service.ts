@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Vehicle } from '../models';
 
 /**
@@ -21,6 +22,7 @@ export class ThreeSceneService {
   private containerMeshes: THREE.Group[] = [];
   private animationFrameId: number | null = null;
   private currentView: CameraView = 'orbital';
+  private gltfLoader: GLTFLoader = new GLTFLoader();
 
   /**
    * Initialize the Three.js scene
@@ -90,6 +92,7 @@ export class ThreeSceneService {
 
   /**
    * Create and add a vehicle to the scene
+   * Attempts to load external GLTF model first, falls back to procedural geometry
    */
   createVehicle(vehicle: Vehicle): void {
     // Remove existing vehicle if any
@@ -97,7 +100,47 @@ export class ThreeSceneService {
       this.scene.remove(this.vehicleMesh);
     }
 
-    // Create vehicle group
+    // Try to load external GLTF model
+    const modelPath = `assets/models/${vehicle.type}.glb`;
+    
+    this.gltfLoader.load(
+      modelPath,
+      // Success callback
+      (gltf) => {
+        console.log(`✅ Loaded external model for ${vehicle.type}`);
+        const model = gltf.scene;
+        
+        // Center and scale the model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        // Normalize scale to approximately 3 units height
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 3 / maxDim;
+        model.scale.setScalar(scale);
+        
+        // Center the model
+        model.position.sub(center.multiplyScalar(scale));
+        model.position.y = 0; // Place on ground
+        
+        this.scene.add(model);
+        this.vehicleMesh = model;
+      },
+      // Progress callback
+      undefined,
+      // Error callback - fallback to procedural geometry
+      (error) => {
+        console.log(`ℹ️ External model not found for ${vehicle.type}, using procedural geometry`);
+        this.createProceduralVehicle(vehicle);
+      }
+    );
+  }
+
+  /**
+   * Create vehicle using procedural geometry (fallback)
+   */
+  private createProceduralVehicle(vehicle: Vehicle): void {
     const vehicleGroup = new THREE.Group();
 
     switch (vehicle.type) {
