@@ -38,6 +38,15 @@ import { ThreeSceneService } from '../../services/three-scene.service';
               placeholder="1-10">
           </div>
           
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="loopAnimation">
+              <span>Loop Animation</span>
+            </label>
+          </div>
+          
           <button 
             class="btn btn-primary"
             (click)="startMission()"
@@ -135,6 +144,27 @@ import { ThreeSceneService } from '../../services/three-scene.service';
     input:focus {
       outline: none;
       border-color: #2196f3;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    
+    .checkbox-label input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      min-height: auto;
+    }
+    
+    .checkbox-label span {
+      user-select: none;
     }
 
     .btn {
@@ -270,6 +300,7 @@ export class MissionPanelComponent {
   currentMission = signal<Mission | null>(null);
   targetLocation = 'A-5-3';
   containerCount = 3;
+  loopAnimation = false; // Flag for animation looping
 
   startMission(): void {
     if (!this.targetLocation || this.containerCount < 1) {
@@ -291,8 +322,8 @@ export class MissionPanelComponent {
     // Add containers to 3D scene
     this.threeSceneService.addContainers(this.containerCount);
     
-    // Start mission animation
-    this.threeSceneService.startMissionAnimation(this.targetLocation);
+    // Start mission animation with loop option
+    this.threeSceneService.startMissionAnimation(this.targetLocation, this.loopAnimation);
   }
 
   completeMission(): void {

@@ -32,6 +32,7 @@ export class ThreeSceneService {
   private initialCameraPosition: THREE.Vector3 = new THREE.Vector3(8, 8, 8);
   private initialControlsTarget: THREE.Vector3 = new THREE.Vector3(0, 2, 0);
   private isTouchDevice: boolean = false;
+  private animationLoop: boolean = false; // Flag for loop animation
 
   /**
    * Initialize the Three.js scene
@@ -1060,18 +1061,21 @@ export class ThreeSceneService {
   private animate = (): void => {
     this.animationFrameId = requestAnimationFrame(this.animate);
 
-    // Update controls (only if enabled)
-    if (this.controls.enabled) {
-      this.controls.update();
-    }
+    // Always update controls (allow control during animation)
+    this.controls.update();
 
     // Mission animation - move vehicle along path
     if (this.missionActive && this.vehicleMesh && this.animationPath.length > 1) {
       this.animationProgress += 0.002; // Animation speed
       
       if (this.animationProgress >= 1) {
-        this.animationProgress = 1;
-        this.missionActive = false; // Stop at end
+        if (this.animationLoop) {
+          // Loop back to start
+          this.animationProgress = 0;
+        } else {
+          this.animationProgress = 1;
+          this.missionActive = false; // Stop at end
+        }
       }
       
       // Use smooth curve interpolation instead of linear
@@ -1113,55 +1117,61 @@ export class ThreeSceneService {
   
   /**
    * Update camera to follow vehicle during mission
+   * Camera movement is relative to vehicle position and rotation
    */
   private updateCameraFollowVehicle(): void {
     if (!this.vehicleMesh) return;
     
     const vehiclePos = this.vehicleMesh.position;
+    const vehicleRot = this.vehicleMesh.rotation.y;
     
     switch (this.currentView) {
       case 'orbital':
-        // Follow from behind and above
-        const offset = new THREE.Vector3(0, 8, 8);
-        const rotatedOffset = offset.applyAxisAngle(
+        // Follow from behind and above (relative to vehicle orientation)
+        const offsetOrbital = new THREE.Vector3(0, 8, 8); // Behind and above in vehicle space
+        const rotatedOffsetOrbital = offsetOrbital.clone().applyAxisAngle(
           new THREE.Vector3(0, 1, 0),
-          this.vehicleMesh.rotation.y
+          vehicleRot
         );
-        this.camera.position.copy(vehiclePos).add(rotatedOffset);
+        this.camera.position.copy(vehiclePos).add(rotatedOffsetOrbital);
         this.controls.target.copy(vehiclePos).add(new THREE.Vector3(0, 2, 0));
         break;
         
       case 'first-person':
-        // Inside vehicle looking forward
+        // Inside vehicle looking forward (always relative to vehicle)
         this.updateFirstPersonCamera();
         break;
         
       case 'top-down':
-        // Above vehicle
+        // Above vehicle (follows position, not rotation)
         this.camera.position.set(vehiclePos.x, 20, vehiclePos.z);
         this.controls.target.copy(vehiclePos);
         break;
         
       case 'side':
-        // Follow from side
-        this.camera.position.set(vehiclePos.x + 12, 5, vehiclePos.z);
+        // Follow from side (relative to vehicle orientation)
+        const offsetSide = new THREE.Vector3(12, 5, 0); // Right side in vehicle space
+        const rotatedOffsetSide = offsetSide.clone().applyAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          vehicleRot
+        );
+        this.camera.position.copy(vehiclePos).add(rotatedOffsetSide);
         this.controls.target.copy(vehiclePos).add(new THREE.Vector3(0, 2, 0));
         break;
-    }
-    
-    if (this.currentView !== 'first-person') {
-      this.controls.update();
     }
   }
 
   /**
    * Start mission animation
+   * @param targetLocation Target location for mission (e.g., "A-5-3")
+   * @param loop Whether to loop the animation continuously
    */
-  startMissionAnimation(targetLocation: string): void {
+  startMissionAnimation(targetLocation: string, loop: boolean = false): void {
     // Generate a path based on target location
     this.animationPath = this.generatePathForLocation(targetLocation);
     this.animationProgress = 0;
     this.missionActive = true;
+    this.animationLoop = loop;
   }
 
   /**
@@ -1170,6 +1180,7 @@ export class ThreeSceneService {
   stopMissionAnimation(): void {
     this.missionActive = false;
     this.animationProgress = 0;
+    this.animationLoop = false; // Clear loop flag
     
     // Reset camera to initial position
     this.resetCamera();
