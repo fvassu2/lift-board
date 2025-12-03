@@ -1,6 +1,27 @@
 {
-  "name": "lift-board-app",
-  "version": "0.0.0",
+  "name": "lift-board",
+  "version": "1.0.0",
+  "description": "A modern Angular 19 tablet dashboard for warehouse forklift operators with 3D vehicle visualization and RFID validation",
+  "keywords": [
+    "angular",
+    "warehouse",
+    "forklift",
+    "3d",
+    "threejs",
+    "rfid",
+    "tablet",
+    "dashboard"
+  ],
+  "author": "fvassu2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fvassu2/lift-board.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fvassu2/lift-board/issues"
+  },
+  "homepage": "https://github.com/fvassu2/lift-board#readme",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +29,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
