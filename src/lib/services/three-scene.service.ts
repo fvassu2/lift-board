@@ -28,19 +28,28 @@ export class ThreeSceneService {
   private missionActive: boolean = false;
   private animationProgress: number = 0;
   private animationPath: THREE.Vector3[] = [];
+  private canvas!: HTMLCanvasElement;
+  private initialCameraPosition: THREE.Vector3 = new THREE.Vector3(8, 8, 8);
+  private initialControlsTarget: THREE.Vector3 = new THREE.Vector3(0, 2, 0);
+  private isTouchDevice: boolean = false;
 
   /**
    * Initialize the Three.js scene
    */
   initScene(canvas: HTMLCanvasElement, width: number, height: number): void {
+    this.canvas = canvas;
+    
+    // Detect if device supports touch
+    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
     // Create camera
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    this.camera.position.set(8, 8, 8);
-    this.camera.lookAt(0, 2, 0);
+    this.camera.position.copy(this.initialCameraPosition);
+    this.camera.lookAt(this.initialControlsTarget);
 
     // Create renderer
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -54,7 +63,10 @@ export class ThreeSceneService {
     this.controls.minDistance = 3;
     this.controls.maxDistance = 50;
     this.controls.maxPolarAngle = Math.PI / 2; // Prevent going below ground
-    this.controls.target.set(0, 2, 0);
+    this.controls.target.copy(this.initialControlsTarget);
+    
+    // Configure controls based on device type
+    this.configureControls();
 
     // Add lighting
     this.addLights();
@@ -64,6 +76,61 @@ export class ThreeSceneService {
 
     // Start animation loop
     this.animate();
+  }
+
+  /**
+   * Configure controls based on device type (desktop vs tablet)
+   */
+  private configureControls(): void {
+    if (this.isTouchDevice) {
+      // Tablet/Touch controls (Google Earth style)
+      // One finger drag: rotate
+      // Two finger drag: pan
+      // Two finger pinch: zoom
+      this.controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      };
+    } else {
+      // Desktop controls
+      // Mouse drag: rotate (default)
+      // Ctrl + Mouse drag: pan
+      // Scroll: zoom
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
+      };
+      
+      // Override to use Ctrl+Left for pan
+      const domElement = this.controls.domElement;
+      
+      if (domElement) {
+        let ctrlPressed = false;
+        
+        domElement.addEventListener('keydown', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            ctrlPressed = true;
+            this.controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+          }
+        });
+        
+        domElement.addEventListener('keyup', (e) => {
+          if (!e.ctrlKey && !e.metaKey) {
+            ctrlPressed = false;
+            this.controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+          }
+        });
+        
+        domElement.addEventListener('mousedown', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            this.controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+          } else {
+            this.controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+          }
+        });
+      }
+    }
   }
 
   /**
@@ -163,6 +230,11 @@ export class ThreeSceneService {
         // Center the model
         model.position.sub(center.multiplyScalar(scale));
         model.position.y = 0; // Place on ground
+        
+        // Fix rotation for pallet-jack (rotated 90 degrees to face forward)
+        if (vehicle.type === 'pallet-jack') {
+          model.rotation.y = -Math.PI / 2; // Rotate -90 degrees
+        }
         
         this.scene.add(model);
         this.vehicleMesh = model;
@@ -915,27 +987,64 @@ export class ThreeSceneService {
    */
   setCameraView(view: CameraView): void {
     this.currentView = view;
-
-    switch (view) {
+    
+    // If not in mission, set static camera positions
+    if (!this.missionActive) {
+      this.updateCameraForView();
+    }
+    // If in mission, camera positioning is handled in animate loop
+  }
+  
+  /**
+   * Update camera position for current view (when not following vehicle)
+   */
+  private updateCameraForView(): void {
+    switch (this.currentView) {
       case 'orbital':
-        this.camera.position.set(8, 8, 8);
-        this.controls.target.set(0, 2, 0);
+        this.camera.position.copy(this.initialCameraPosition);
+        this.controls.target.copy(this.initialControlsTarget);
+        this.controls.enabled = true;
         break;
       case 'top-down':
         this.camera.position.set(0, 20, 0);
         this.controls.target.set(0, 0, 0);
+        this.controls.enabled = true;
         break;
       case 'first-person':
-        this.camera.position.set(0, 3, -5);
-        this.controls.target.set(0, 2, 0);
+        // Will be positioned relative to vehicle in animate loop
+        if (this.vehicleMesh) {
+          this.updateFirstPersonCamera();
+        } else {
+          this.camera.position.set(0, 2, 3);
+          this.controls.target.set(0, 2, 0);
+        }
+        this.controls.enabled = false; // Disable controls in first-person during mission
         break;
       case 'side':
         this.camera.position.set(12, 5, 0);
         this.controls.target.set(0, 2, 0);
+        this.controls.enabled = true;
         break;
     }
     
     this.controls.update();
+  }
+  
+  /**
+   * Update first-person camera to be inside vehicle looking forward
+   */
+  private updateFirstPersonCamera(): void {
+    if (!this.vehicleMesh) return;
+    
+    // Position camera inside the vehicle (slightly elevated, centered)
+    const cameraOffset = new THREE.Vector3(0, 2, 0.5); // Inside cabin, looking forward
+    const worldCameraPos = this.vehicleMesh.localToWorld(cameraOffset.clone());
+    this.camera.position.copy(worldCameraPos);
+    
+    // Calculate forward direction based on vehicle rotation
+    const forward = new THREE.Vector3(0, 0, -3); // Look 3 units ahead
+    const worldForward = this.vehicleMesh.localToWorld(forward.clone());
+    this.camera.lookAt(worldForward);
   }
 
   /**
@@ -951,8 +1060,10 @@ export class ThreeSceneService {
   private animate = (): void => {
     this.animationFrameId = requestAnimationFrame(this.animate);
 
-    // Update controls
-    this.controls.update();
+    // Update controls (only if enabled)
+    if (this.controls.enabled) {
+      this.controls.update();
+    }
 
     // Mission animation - move vehicle along path
     if (this.missionActive && this.vehicleMesh && this.animationPath.length > 1) {
@@ -963,53 +1074,129 @@ export class ThreeSceneService {
         this.missionActive = false; // Stop at end
       }
       
-      // Interpolate position along path
-      const segmentCount = this.animationPath.length - 1;
-      const currentSegment = Math.min(
-        Math.floor(this.animationProgress * segmentCount),
-        segmentCount - 1
-      );
-      const segmentProgress = (this.animationProgress * segmentCount) - currentSegment;
+      // Use smooth curve interpolation instead of linear
+      const position = this.getPositionOnPath(this.animationProgress);
+      const nextPosition = this.getPositionOnPath(Math.min(this.animationProgress + 0.01, 1));
       
-      const start = this.animationPath[currentSegment];
-      const end = this.animationPath[currentSegment + 1];
-      
-      // Lerp position
-      this.vehicleMesh.position.lerpVectors(start, end, segmentProgress);
+      // Set vehicle position
+      this.vehicleMesh.position.copy(position);
       
       // Rotate vehicle to face direction of travel
-      const direction = new THREE.Vector3().subVectors(end, start).normalize();
-      if (direction.length() > 0) {
+      const direction = new THREE.Vector3().subVectors(nextPosition, position).normalize();
+      if (direction.length() > 0.01) {
         const angle = Math.atan2(direction.x, direction.z);
         this.vehicleMesh.rotation.y = angle;
       }
+      
+      // Camera follows vehicle based on current view
+      this.updateCameraFollowVehicle();
     }
 
     this.renderer.render(this.scene, this.camera);
+  }
+  
+  /**
+   * Get position on path using smooth curve interpolation
+   */
+  private getPositionOnPath(t: number): THREE.Vector3 {
+    if (this.animationPath.length < 2) {
+      return new THREE.Vector3();
+    }
+    
+    // Use Catmull-Rom spline for smooth curves
+    const curve = new THREE.CatmullRomCurve3(this.animationPath);
+    curve.curveType = 'catmullrom';
+    curve.tension = 0.5; // Controls curve tightness
+    
+    return curve.getPoint(t);
+  }
+  
+  /**
+   * Update camera to follow vehicle during mission
+   */
+  private updateCameraFollowVehicle(): void {
+    if (!this.vehicleMesh) return;
+    
+    const vehiclePos = this.vehicleMesh.position;
+    
+    switch (this.currentView) {
+      case 'orbital':
+        // Follow from behind and above
+        const offset = new THREE.Vector3(0, 8, 8);
+        const rotatedOffset = offset.applyAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          this.vehicleMesh.rotation.y
+        );
+        this.camera.position.copy(vehiclePos).add(rotatedOffset);
+        this.controls.target.copy(vehiclePos).add(new THREE.Vector3(0, 2, 0));
+        break;
+        
+      case 'first-person':
+        // Inside vehicle looking forward
+        this.updateFirstPersonCamera();
+        break;
+        
+      case 'top-down':
+        // Above vehicle
+        this.camera.position.set(vehiclePos.x, 20, vehiclePos.z);
+        this.controls.target.copy(vehiclePos);
+        break;
+        
+      case 'side':
+        // Follow from side
+        this.camera.position.set(vehiclePos.x + 12, 5, vehiclePos.z);
+        this.controls.target.copy(vehiclePos).add(new THREE.Vector3(0, 2, 0));
+        break;
+    }
+    
+    if (this.currentView !== 'first-person') {
+      this.controls.update();
+    }
   }
 
   /**
    * Start mission animation
    */
   startMissionAnimation(targetLocation: string): void {
-    // Generate a simple path based on target location
-    // In a real app, this would use actual warehouse coordinates
+    // Generate a path based on target location
     this.animationPath = this.generatePathForLocation(targetLocation);
     this.animationProgress = 0;
     this.missionActive = true;
   }
 
   /**
-   * Stop mission animation
+   * Stop mission animation and reset camera
    */
   stopMissionAnimation(): void {
     this.missionActive = false;
     this.animationProgress = 0;
+    
+    // Reset camera to initial position
+    this.resetCamera();
+  }
+  
+  /**
+   * Reset camera to initial/center position
+   */
+  resetCamera(): void {
+    // Reset vehicle position to origin
+    if (this.vehicleMesh) {
+      this.vehicleMesh.position.set(0, 0, 0);
+      this.vehicleMesh.rotation.y = 0;
+    }
+    
+    // Reset camera to initial orbital view
+    this.camera.position.copy(this.initialCameraPosition);
+    this.controls.target.copy(this.initialControlsTarget);
+    this.controls.enabled = true;
+    this.controls.update();
+    
+    // Reset to orbital view
+    this.currentView = 'orbital';
   }
 
   /**
-   * Generate a path based on target location
-   * This is a placeholder - in real implementation, use warehouse map
+   * Generate a path with curves based on target location
    */
   private generatePathForLocation(location: string): THREE.Vector3[] {
     // Parse location (e.g., "A-5-3")
@@ -1018,13 +1205,15 @@ export class ThreeSceneService {
     const rack = parseInt(parts[1] || '5');
     const level = parseInt(parts[2] || '3');
     
-    // Generate a simple path
+    // Generate a path with more waypoints for smooth curves
     // Start position
     const start = new THREE.Vector3(0, 0, 0);
     
-    // Waypoints
-    const waypoint1 = new THREE.Vector3(rack * 2, 0, 0);
-    const waypoint2 = new THREE.Vector3(rack * 2, 0, rack * 2);
+    // Create intermediate waypoints for curved path
+    const waypoint1 = new THREE.Vector3(rack * 1, 0, 0);
+    const waypoint2 = new THREE.Vector3(rack * 1.5, 0, rack * 0.5);
+    const waypoint3 = new THREE.Vector3(rack * 2, 0, rack * 1.5);
+    const waypoint4 = new THREE.Vector3(rack * 2, 0, rack * 2);
     
     // End position (simulated warehouse location)
     const end = new THREE.Vector3(
@@ -1033,7 +1222,8 @@ export class ThreeSceneService {
       rack * 2 + (aisle.charCodeAt(0) - 65) * 3
     );
     
-    return [start, waypoint1, waypoint2, end];
+    // Return path with multiple points for smooth curves
+    return [start, waypoint1, waypoint2, waypoint3, waypoint4, end];
   }
 
   /**
