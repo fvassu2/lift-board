@@ -7,6 +7,7 @@ Place your GLTF/GLB 3D models here for the warehouse vehicles.
 - `forklift.glb` or `forklift.gltf` - Forklift model
 - `pallet-jack.glb` or `pallet-jack.gltf` - Pallet jack model  
 - `stacker.glb` or `stacker.gltf` - Stacker model
+- `container.glb` or `container.gltf` - Container/bin model (optional)
 
 ## Model Requirements
 
@@ -34,9 +35,21 @@ Good sources for free/paid 3D models:
 5. Rename the `.glb` file to `forklift.glb`
 6. Place in this directory
 
+## Texture Issues
+
+If your model loads but textures are missing:
+1. Ensure textures are embedded in the GLB file (recommended)
+2. Or place texture files in the same directory as the .gltf file
+3. Check that texture paths in the .gltf file are relative, not absolute
+4. Use GLB format for best compatibility (it embeds everything)
+
 ## Fallback Behavior
 
 If external models are not found, the application will automatically use procedurally generated geometric models as fallback. This ensures the app always works even without custom models.
+
+## Container Models
+
+Containers/bins can also be loaded as external models. If `container.glb` is present, it will be used for all container instances. Otherwise, procedural geometry is used.
 
 ## Testing
 

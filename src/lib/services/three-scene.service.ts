@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Vehicle } from '../models';
 
 /**
@@ -23,6 +24,10 @@ export class ThreeSceneService {
   private animationFrameId: number | null = null;
   private currentView: CameraView = 'orbital';
   private gltfLoader: GLTFLoader = new GLTFLoader();
+  private controls!: OrbitControls;
+  private missionActive: boolean = false;
+  private animationProgress: number = 0;
+  private animationPath: THREE.Vector3[] = [];
 
   /**
    * Initialize the Three.js scene
@@ -34,12 +39,22 @@ export class ThreeSceneService {
 
     // Create camera
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    this.setCameraView('orbital');
+    this.camera.position.set(8, 8, 8);
+    this.camera.lookAt(0, 2, 0);
 
     // Create renderer
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
+
+    // Add OrbitControls for pan, zoom, rotate
+    this.controls = new OrbitControls(this.camera, canvas);
+    this.controls.enableDamping = true; // Smooth controls
+    this.controls.dampingFactor = 0.05;
+    this.controls.minDistance = 3;
+    this.controls.maxDistance = 50;
+    this.controls.maxPolarAngle = Math.PI / 2; // Prevent going below ground
+    this.controls.target.set(0, 2, 0);
 
     // Add lighting
     this.addLights();
@@ -98,6 +113,9 @@ export class ThreeSceneService {
     // Remove existing vehicle if any
     if (this.vehicleMesh) {
       this.scene.remove(this.vehicleMesh);
+      // Also remove containers since they'll be re-attached
+      this.containerMeshes.forEach(mesh => this.scene.remove(mesh));
+      this.containerMeshes = [];
     }
 
     // Try to load external GLTF model
@@ -109,6 +127,28 @@ export class ThreeSceneService {
       (gltf) => {
         console.log(`✅ Loaded external model for ${vehicle.type}`);
         const model = gltf.scene;
+        
+        // Traverse and ensure materials are properly set
+        model.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            // Enable shadows
+            child.castShadow = true;
+            child.receiveShadow = true;
+            
+            // Ensure textures are properly configured
+            if (child.material) {
+              if (Array.isArray(child.material)) {
+                child.material.forEach(mat => {
+                  mat.needsUpdate = true;
+                  if (mat.map) mat.map.needsUpdate = true;
+                });
+              } else {
+                child.material.needsUpdate = true;
+                if (child.material.map) child.material.map.needsUpdate = true;
+              }
+            }
+          }
+        });
         
         // Center and scale the model
         const box = new THREE.Box3().setFromObject(model);
@@ -128,10 +168,13 @@ export class ThreeSceneService {
         this.vehicleMesh = model;
       },
       // Progress callback
-      undefined,
+      (xhr) => {
+        console.log(`Loading ${vehicle.type}: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
+      },
       // Error callback - fallback to procedural geometry
       (error) => {
         console.log(`ℹ️ External model not found for ${vehicle.type}, using procedural geometry`);
+        console.error('Error details:', error);
         this.createProceduralVehicle(vehicle);
       }
     );
@@ -733,88 +776,138 @@ export class ThreeSceneService {
   }
 
   /**
-   * Add containers to the vehicle
+   * Add containers to the vehicle (attached, not stationary)
    */
   addContainers(count: number): void {
     // Remove existing containers
-    this.containerMeshes.forEach(mesh => this.scene.remove(mesh));
+    this.containerMeshes.forEach(mesh => {
+      if (mesh.parent) {
+        mesh.parent.remove(mesh);
+      }
+    });
     this.containerMeshes = [];
 
     if (!this.vehicleMesh) {
       return;
     }
 
+    // Try to load external container model first
+    const containerModelPath = 'assets/models/container.glb';
+    
+    // Load containers with a counter to track completion
+    let loadedCount = 0;
+    const attemptLoad = (index: number) => {
+      this.gltfLoader.load(
+        containerModelPath,
+        // Success - use external model
+        (gltf) => {
+          const containerModel = gltf.scene.clone();
+          
+          // Scale and position the container
+          const box = new THREE.Box3().setFromObject(containerModel);
+          const size = box.getSize(new THREE.Vector3());
+          const scale = 1.2 / Math.max(size.x, size.y, size.z);
+          containerModel.scale.setScalar(scale);
+          
+          // Position on vehicle (stacked)
+          containerModel.position.set(0, 0.5 + (index * 1), 1.5);
+          
+          // Attach to vehicle
+          this.vehicleMesh!.add(containerModel);
+          this.containerMeshes.push(containerModel);
+        },
+        undefined,
+        // Error - use procedural geometry
+        () => {
+          if (loadedCount === 0) {
+            console.log('ℹ️ Container model not found, using procedural geometry');
+          }
+          loadedCount++;
+          
+          const containerGroup = this.createProceduralContainer();
+          containerGroup.position.set(0, 0.5 + (index * 1), 1.5);
+          
+          // Attach to vehicle
+          this.vehicleMesh!.add(containerGroup);
+          this.containerMeshes.push(containerGroup);
+        }
+      );
+    };
+
+    // Load all containers
     for (let i = 0; i < count; i++) {
-      // Create a realistic pallet container
-      const containerGroup = new THREE.Group();
-
-      // Main container body with wood texture-like color
-      const containerMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xcd853f,
-        roughness: 0.8,
-        metalness: 0.1
-      });
-      
-      const containerGeometry = new THREE.BoxGeometry(1.1, 0.9, 1.1);
-      const container = new THREE.Mesh(containerGeometry, containerMaterial);
-      container.position.set(0, 0.45, 0);
-      containerGroup.add(container);
-
-      // Pallet base (darker wood)
-      const palletMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x8b4513,
-        roughness: 0.9,
-        metalness: 0
-      });
-      const palletGeometry = new THREE.BoxGeometry(1.2, 0.15, 1.2);
-      const pallet = new THREE.Mesh(palletGeometry, palletMaterial);
-      pallet.position.set(0, 0.075, 0);
-      containerGroup.add(pallet);
-
-      // Pallet slats (wooden planks detail)
-      const slatGeometry = new THREE.BoxGeometry(1.2, 0.04, 0.12);
-      for (let j = 0; j < 5; j++) {
-        const slat = new THREE.Mesh(slatGeometry, palletMaterial);
-        slat.position.set(0, 0.16, -0.5 + j * 0.25);
-        containerGroup.add(slat);
-      }
-
-      // Metal strapping (corner reinforcements)
-      const strapMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x444444,
-        roughness: 0.4,
-        metalness: 0.8
-      });
-      const strapGeometry = new THREE.BoxGeometry(0.05, 0.95, 0.05);
-      const corners = [
-        { x: -0.55, z: -0.55 },
-        { x: 0.55, z: -0.55 },
-        { x: -0.55, z: 0.55 },
-        { x: 0.55, z: 0.55 }
-      ];
-      corners.forEach(corner => {
-        const strap = new THREE.Mesh(strapGeometry, strapMaterial);
-        strap.position.set(corner.x, 0.475, corner.z);
-        containerGroup.add(strap);
-      });
-
-      // Warning labels
-      const labelGeometry = new THREE.PlaneGeometry(0.3, 0.3);
-      const labelMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xffff00,
-        emissive: 0xffff00,
-        emissiveIntensity: 0.2
-      });
-      const label = new THREE.Mesh(labelGeometry, labelMaterial);
-      label.position.set(0, 0.6, 0.56);
-      containerGroup.add(label);
-
-      // Stack containers on top of each other
-      containerGroup.position.set(0, 0.5 + (i * 1), 1.5);
-      
-      this.scene.add(containerGroup);
-      this.containerMeshes.push(containerGroup);
+      attemptLoad(i);
     }
+  }
+
+  /**
+   * Create a procedural container/bin
+   */
+  private createProceduralContainer(): THREE.Group {
+    const containerGroup = new THREE.Group();
+
+    // Main container body with wood texture-like color
+    const containerMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xcd853f,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    
+    const containerGeometry = new THREE.BoxGeometry(1.1, 0.9, 1.1);
+    const container = new THREE.Mesh(containerGeometry, containerMaterial);
+    container.position.set(0, 0.45, 0);
+    containerGroup.add(container);
+
+    // Pallet base (darker wood)
+    const palletMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x8b4513,
+      roughness: 0.9,
+      metalness: 0
+    });
+    const palletGeometry = new THREE.BoxGeometry(1.2, 0.15, 1.2);
+    const pallet = new THREE.Mesh(palletGeometry, palletMaterial);
+    pallet.position.set(0, 0.075, 0);
+    containerGroup.add(pallet);
+
+    // Pallet slats (wooden planks detail)
+    const slatGeometry = new THREE.BoxGeometry(1.2, 0.04, 0.12);
+    for (let j = 0; j < 5; j++) {
+      const slat = new THREE.Mesh(slatGeometry, palletMaterial);
+      slat.position.set(0, 0.16, -0.5 + j * 0.25);
+      containerGroup.add(slat);
+    }
+
+    // Metal strapping (corner reinforcements)
+    const strapMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x444444,
+      roughness: 0.4,
+      metalness: 0.8
+    });
+    const strapGeometry = new THREE.BoxGeometry(0.05, 0.95, 0.05);
+    const corners = [
+      { x: -0.55, z: -0.55 },
+      { x: 0.55, z: -0.55 },
+      { x: -0.55, z: 0.55 },
+      { x: 0.55, z: 0.55 }
+    ];
+    corners.forEach(corner => {
+      const strap = new THREE.Mesh(strapGeometry, strapMaterial);
+      strap.position.set(corner.x, 0.475, corner.z);
+      containerGroup.add(strap);
+    });
+
+    // Warning labels
+    const labelGeometry = new THREE.PlaneGeometry(0.3, 0.3);
+    const labelMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xffff00,
+      emissive: 0xffff00,
+      emissiveIntensity: 0.2
+    });
+    const label = new THREE.Mesh(labelGeometry, labelMaterial);
+    label.position.set(0, 0.6, 0.56);
+    containerGroup.add(label);
+
+    return containerGroup;
   }
 
   /**
@@ -826,21 +919,23 @@ export class ThreeSceneService {
     switch (view) {
       case 'orbital':
         this.camera.position.set(8, 8, 8);
-        this.camera.lookAt(0, 2, 0);
+        this.controls.target.set(0, 2, 0);
         break;
       case 'top-down':
         this.camera.position.set(0, 20, 0);
-        this.camera.lookAt(0, 0, 0);
+        this.controls.target.set(0, 0, 0);
         break;
       case 'first-person':
         this.camera.position.set(0, 3, -5);
-        this.camera.lookAt(0, 2, 0);
+        this.controls.target.set(0, 2, 0);
         break;
       case 'side':
         this.camera.position.set(12, 5, 0);
-        this.camera.lookAt(0, 2, 0);
+        this.controls.target.set(0, 2, 0);
         break;
     }
+    
+    this.controls.update();
   }
 
   /**
@@ -856,12 +951,89 @@ export class ThreeSceneService {
   private animate = (): void => {
     this.animationFrameId = requestAnimationFrame(this.animate);
 
-    // Rotate vehicle slowly for visual effect (only in orbital view)
-    if (this.vehicleMesh && this.currentView === 'orbital') {
-      this.vehicleMesh.rotation.y += 0.005;
+    // Update controls
+    this.controls.update();
+
+    // Mission animation - move vehicle along path
+    if (this.missionActive && this.vehicleMesh && this.animationPath.length > 1) {
+      this.animationProgress += 0.002; // Animation speed
+      
+      if (this.animationProgress >= 1) {
+        this.animationProgress = 1;
+        this.missionActive = false; // Stop at end
+      }
+      
+      // Interpolate position along path
+      const segmentCount = this.animationPath.length - 1;
+      const currentSegment = Math.min(
+        Math.floor(this.animationProgress * segmentCount),
+        segmentCount - 1
+      );
+      const segmentProgress = (this.animationProgress * segmentCount) - currentSegment;
+      
+      const start = this.animationPath[currentSegment];
+      const end = this.animationPath[currentSegment + 1];
+      
+      // Lerp position
+      this.vehicleMesh.position.lerpVectors(start, end, segmentProgress);
+      
+      // Rotate vehicle to face direction of travel
+      const direction = new THREE.Vector3().subVectors(end, start).normalize();
+      if (direction.length() > 0) {
+        const angle = Math.atan2(direction.x, direction.z);
+        this.vehicleMesh.rotation.y = angle;
+      }
     }
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Start mission animation
+   */
+  startMissionAnimation(targetLocation: string): void {
+    // Generate a simple path based on target location
+    // In a real app, this would use actual warehouse coordinates
+    this.animationPath = this.generatePathForLocation(targetLocation);
+    this.animationProgress = 0;
+    this.missionActive = true;
+  }
+
+  /**
+   * Stop mission animation
+   */
+  stopMissionAnimation(): void {
+    this.missionActive = false;
+    this.animationProgress = 0;
+  }
+
+  /**
+   * Generate a path based on target location
+   * This is a placeholder - in real implementation, use warehouse map
+   */
+  private generatePathForLocation(location: string): THREE.Vector3[] {
+    // Parse location (e.g., "A-5-3")
+    const parts = location.split('-');
+    const aisle = parts[0] || 'A';
+    const rack = parseInt(parts[1] || '5');
+    const level = parseInt(parts[2] || '3');
+    
+    // Generate a simple path
+    // Start position
+    const start = new THREE.Vector3(0, 0, 0);
+    
+    // Waypoints
+    const waypoint1 = new THREE.Vector3(rack * 2, 0, 0);
+    const waypoint2 = new THREE.Vector3(rack * 2, 0, rack * 2);
+    
+    // End position (simulated warehouse location)
+    const end = new THREE.Vector3(
+      rack * 2,
+      0,
+      rack * 2 + (aisle.charCodeAt(0) - 65) * 3
+    );
+    
+    return [start, waypoint1, waypoint2, end];
   }
 
   /**

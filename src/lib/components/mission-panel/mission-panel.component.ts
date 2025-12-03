@@ -290,6 +290,9 @@ export class MissionPanelComponent {
     
     // Add containers to 3D scene
     this.threeSceneService.addContainers(this.containerCount);
+    
+    // Start mission animation
+    this.threeSceneService.startMissionAnimation(this.targetLocation);
   }
 
   completeMission(): void {
@@ -297,6 +300,9 @@ export class MissionPanelComponent {
     if (mission) {
       mission.status = 'completed';
       this.currentMission.set({ ...mission });
+      
+      // Stop animation
+      this.threeSceneService.stopMissionAnimation();
       
       // Reset after a delay
       setTimeout(() => {
@@ -306,6 +312,8 @@ export class MissionPanelComponent {
   }
 
   cancelMission(): void {
+    // Stop animation
+    this.threeSceneService.stopMissionAnimation();
     this.resetMission();
   }
 
