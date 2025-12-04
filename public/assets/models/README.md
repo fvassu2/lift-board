@@ -9,6 +9,70 @@ Place your GLTF/GLB 3D models here for the warehouse vehicles.
 - `stacker.glb` or `stacker.gltf` - Stacker model
 - `container.glb` or `container.gltf` - Container/bin model (optional)
 
+## 🎯 NEW: Rotation Tags (Easy Model Alignment!)
+
+**No need to edit the model in 3D software!** You can now rotate models using filename tags:
+
+### Filename Format
+
+`{vehicle-type}-rotY{degrees}-rotZ{degrees}.glb`
+
+### Rotation Tag Examples
+
+- `forklift-rotY90.glb` - Rotate 90° around Y axis (left/right turn)
+- `pallet-jack-rotY-90.glb` - Rotate -90° around Y axis
+- `forklift-rotY180.glb` - Rotate 180° (face opposite direction)
+- `stacker-rotZ90.glb` - Rotate 90° around Z axis (tilt sideways)
+- `forklift-rotY90-rotZ45.glb` - Multiple rotations (Y first, then Z)
+- `container-rotY180-rotX45.glb` - Container with compound rotation
+
+### Supported Rotation Tags
+
+- `-rotX{degrees}` - Rotate around X axis (pitch: up/down tilt)
+- `-rotY{degrees}` - Rotate around Y axis (yaw: left/right turn)
+- `-rotZ{degrees}` - Rotate around Z axis (roll: sideways tilt)
+
+Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-45`)
+
+### How It Works
+
+1. Download your model (e.g., from Sketchfab)
+2. Test it in the app to see if rotation is needed
+3. If rotated incorrectly, add rotation tags to the filename:
+   - Model faces left instead of forward? Use `-rotY90`
+   - Model is upside-down? Use `-rotZ180`
+   - Model faces backward? Use `-rotY180`
+4. **No need to open Blender or other 3D software!**
+5. Restart the dev server and reload
+
+### Common Rotation Fixes
+
+| Issue | Solution |
+|-------|----------|
+| Model faces left | `forklift-rotY90.glb` |
+| Model faces right | `forklift-rotY-90.glb` |
+| Model faces backward | `forklift-rotY180.glb` |
+| Model is sideways | `forklift-rotZ90.glb` |
+| Model is upside-down | `forklift-rotZ180.glb` |
+
+### Example Workflow
+
+1. Download forklift model: `my-forklift-model.glb`
+2. Rename to: `forklift.glb`
+3. Place in `/public/assets/models/`
+4. Test → Model faces left ❌
+5. Rename to: `forklift-rotY90.glb`
+6. Restart dev server
+7. Test → Model faces forward ✅
+
+### Console Messages
+
+The browser console will show applied rotations:
+```
+✅ Loaded external model: forklift-rotY90
+   Applying rotations from filename: X=0° Y=90° Z=0°
+```
+
 ## Model Requirements
 
 - **Format**: GLTF (.gltf) or GLB (.glb) - GLB is recommended (binary, smaller size)
