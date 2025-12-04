@@ -2,111 +2,12 @@
 
 Place your GLTF/GLB 3D models here for the warehouse vehicles.
 
-## 🚀 Easy Model Loading with Automatic Pattern Matching
+## Required Files
 
-**Just place one file per vehicle type!** The system will automatically find it regardless of rotation tags.
-
-### Supported File Names
-
-For each vehicle type, place **any one** of these naming patterns:
-- `forklift.glb` or `forklift-rotY90.glb` or `forklift-rotY180.glb` (any rotation)
-- `pallet-jack.glb` or `pallet-jack-rotY-90.glb` (any rotation)
-- `stacker.glb` or `stacker-rotZ45.glb` (any rotation)
-- `container.glb` or `container-rotY180.glb` (any rotation)
-
-**The app will automatically detect and load the first matching file for each type!**
-
-## 🎯 Rotation & Translation Tags (Easy Model Alignment!)
-
-**No need to edit the model in 3D software!** You can now rotate AND translate (move) models using filename tags:
-
-### Filename Format
-
-`{vehicle-type}-rotY{degrees}-transX{value}-rotZ{degrees}.glb`
-
-### Rotation Tag Examples
-
-- `forklift-rotY90.glb` - Rotate 90° around Y axis (left/right turn)
-- `pallet-jack-rotY-90.glb` - Rotate -90° around Y axis
-- `forklift-rotY180.glb` - Rotate 180° (face opposite direction)
-- `stacker-rotZ90.glb` - Rotate 90° around Z axis (tilt sideways)
-- `forklift-rotY90-rotZ45.glb` - Multiple rotations (Y first, then Z)
-- `container-rotY180-rotX45.glb` - Container with compound rotation
-
-### Translation Tag Examples (NEW!)
-
-- `pallet-jack-rotY90-transX0.5.glb` - Rotate 90° AND move 0.5 units right
-- `forklift-transX-0.3-transZ1.2.glb` - Move left 0.3 and forward 1.2 units
-- `stacker-rotY180-transY0.2.glb` - Rotate 180° and lift 0.2 units up
-- `forklift-rotY90-transX0.5-transY0.1-transZ-0.3.glb` - Combined rotation and translation
-
-### Supported Tags
-
-**Rotation Tags:**
-- `-rotX{degrees}` - Rotate around X axis (pitch: up/down tilt)
-- `-rotY{degrees}` - Rotate around Y axis (yaw: left/right turn)
-- `-rotZ{degrees}` - Rotate around Z axis (roll: sideways tilt)
-
-**Translation Tags (NEW!):**
-- `-transX{value}` - Move along X axis (left/right)
-- `-transY{value}` - Move along Y axis (up/down)
-- `-transZ{value}` - Move along Z axis (forward/back)
-
-**Values:**
-- Rotation: positive or negative integers (e.g., `90`, `-90`, `180`, `45`)
-- Translation: positive or negative decimals (e.g., `0.5`, `-0.3`, `1.2`, `-1.5`)
-
-### How It Works
-
-1. Download your model (e.g., from Sketchfab)
-2. **Rename it** to match vehicle type + rotation (e.g., `forklift-rotY90.glb`)
-3. Place in `/public/assets/models/` directory
-4. **That's it!** The system will automatically find and load your model
-5. **No need to open Blender or other 3D software!**
-6. Restart the dev server and the model will be loaded with proper rotation
-
-### Common Rotation & Translation Fixes
-
-| Issue | Solution |
-|-------|----------|
-| Model faces left | `forklift-rotY90.glb` |
-| Model faces right | `forklift-rotY-90.glb` |
-| Model faces backward | `forklift-rotY180.glb` |
-| Model is sideways | `forklift-rotZ90.glb` |
-| Model is upside-down | `forklift-rotZ180.glb` |
-| Model rotates off-center | `forklift-rotY90-transX0.5.glb` (adjust translation to center) |
-| Model too high/low | `forklift-transY0.2.glb` or `forklift-transY-0.3.glb` |
-| Model needs positioning | Combine rotation + translation tags |
-
-### Example Workflow
-
-1. Download forklift model: `my-forklift-model.glb`
-2. **Test first with base name**: Rename to `forklift.glb`
-3. Place in `/public/assets/models/`
-4. Test in app → Model faces left ❌
-5. **Just rename the same file**: `forklift-rotY90.glb`
-6. Restart dev server
-7. Test → Model faces forward ✅
-
-**Note**: The system tries common rotation patterns automatically. If your model loads rotated wrong, just rename the file with the appropriate rotation tag!
-
-### Pattern Matching Details
-
-The system automatically tries these patterns (in order):
-1. Base name (`forklift.glb`, `forklift.gltf`)
-2. Common rotations (`forklift-rotY90.glb`, `forklift-rotY-90.glb`, etc.)
-3. Falls back to procedural geometry if no file found
-
-**You only need ONE file per vehicle type.** Name it with the rotation that works!
-
-### Console Messages
-
-The browser console will show which file was loaded:
-```
-✅ Loaded external model: forklift-rotY90-transX0.5.glb
-   Applying rotations from filename: X=0° Y=90° Z=0°
-   Applying translations from filename: X=0.5 Y=0 Z=0
-```
+- `forklift.glb` or `forklift.gltf` - Forklift model
+- `pallet-jack.glb` or `pallet-jack.gltf` - Pallet jack model  
+- `stacker.glb` or `stacker.gltf` - Stacker model
+- `container.glb` or `container.gltf` - Container/bin model (optional)
 
 ## Model Requirements
 
