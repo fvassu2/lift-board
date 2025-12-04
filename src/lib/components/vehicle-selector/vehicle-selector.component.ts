@@ -94,12 +94,8 @@ import { Vehicle } from '../../models';
 export class VehicleSelectorComponent {
   private vehicleService = inject(VehicleService);
   
-  vehicles: Vehicle[] = [];
+  vehicles = this.vehicleService.getVehicles();
   selectedVehicle = this.vehicleService.getSelectedVehicle();
-
-  constructor() {
-    this.vehicles = this.vehicleService.getVehicles();
-  }
 
   onSelect(vehicle: Vehicle): void {
     this.vehicleService.selectVehicle(vehicle.id);

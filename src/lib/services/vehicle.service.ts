@@ -9,10 +9,8 @@ import { Vehicle } from '../models';
   providedIn: 'root'
 })
 export class VehicleService {
-  private vehicles: Vehicle[] = [];
-  private vehiclesLoaded = false;
-
   // Use Angular signals for reactive state management
+  private vehiclesSignal = signal<Vehicle[]>([]);
   private selectedVehicleSignal = signal<Vehicle | null>(null);
 
   constructor() {
@@ -26,9 +24,9 @@ export class VehicleService {
     try {
       const response = await fetch('assets/models/vehicles-config.json');
       if (response.ok) {
-        this.vehicles = await response.json();
-        this.vehiclesLoaded = true;
-        console.log('✅ Vehicle configurations loaded:', this.vehicles.length, 'vehicles');
+        const vehicles = await response.json();
+        this.vehiclesSignal.set(vehicles);
+        console.log('✅ Vehicle configurations loaded:', vehicles.length, 'vehicles');
       } else {
         console.warn('⚠️ Could not load vehicles-config.json, using default configuration');
         this.useDefaultVehicles();
@@ -43,7 +41,7 @@ export class VehicleService {
    * Fallback to default vehicle configuration if JSON loading fails
    */
   private useDefaultVehicles(): void {
-    this.vehicles = [
+    const defaultVehicles = [
       {
         id: 'forklift-1',
         name: 'Forklift',
@@ -81,14 +79,14 @@ export class VehicleService {
         }
       }
     ];
-    this.vehiclesLoaded = true;
+    this.vehiclesSignal.set(defaultVehicles);
   }
 
   /**
-   * Get all available vehicles
+   * Get all available vehicles as a readonly signal
    */
-  getVehicles(): Vehicle[] {
-    return [...this.vehicles];
+  getVehicles() {
+    return this.vehiclesSignal.asReadonly();
   }
 
   /**
@@ -102,7 +100,8 @@ export class VehicleService {
    * Select a vehicle by ID
    */
   selectVehicle(vehicleId: string): void {
-    const vehicle = this.vehicles.find(v => v.id === vehicleId);
+    const vehicles = this.vehiclesSignal();
+    const vehicle = vehicles.find(v => v.id === vehicleId);
     if (vehicle) {
       this.selectedVehicleSignal.set(vehicle);
     }
