@@ -2,14 +2,21 @@
 
 Place your GLTF/GLB 3D models here for the warehouse vehicles.
 
-## Required Files
+## 🚀 Easy Model Loading with Automatic Pattern Matching
 
-- `forklift.glb` or `forklift.gltf` - Forklift model
-- `pallet-jack.glb` or `pallet-jack.gltf` - Pallet jack model  
-- `stacker.glb` or `stacker.gltf` - Stacker model
-- `container.glb` or `container.gltf` - Container/bin model (optional)
+**Just place one file per vehicle type!** The system will automatically find it regardless of rotation tags.
 
-## 🎯 NEW: Rotation Tags (Easy Model Alignment!)
+### Supported File Names
+
+For each vehicle type, place **any one** of these naming patterns:
+- `forklift.glb` or `forklift-rotY90.glb` or `forklift-rotY180.glb` (any rotation)
+- `pallet-jack.glb` or `pallet-jack-rotY-90.glb` (any rotation)
+- `stacker.glb` or `stacker-rotZ45.glb` (any rotation)
+- `container.glb` or `container-rotY180.glb` (any rotation)
+
+**The app will automatically detect and load the first matching file for each type!**
+
+## 🎯 Rotation Tags (Easy Model Alignment!)
 
 **No need to edit the model in 3D software!** You can now rotate models using filename tags:
 
@@ -37,13 +44,11 @@ Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-4
 ### How It Works
 
 1. Download your model (e.g., from Sketchfab)
-2. Test it in the app to see if rotation is needed
-3. If rotated incorrectly, add rotation tags to the filename:
-   - Model faces left instead of forward? Use `-rotY90`
-   - Model is upside-down? Use `-rotZ180`
-   - Model faces backward? Use `-rotY180`
-4. **No need to open Blender or other 3D software!**
-5. Restart the dev server and reload
+2. **Rename it** to match vehicle type + rotation (e.g., `forklift-rotY90.glb`)
+3. Place in `/public/assets/models/` directory
+4. **That's it!** The system will automatically find and load your model
+5. **No need to open Blender or other 3D software!**
+6. Restart the dev server and the model will be loaded with proper rotation
 
 ### Common Rotation Fixes
 
@@ -58,18 +63,29 @@ Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-4
 ### Example Workflow
 
 1. Download forklift model: `my-forklift-model.glb`
-2. Rename to: `forklift.glb`
+2. **Test first with base name**: Rename to `forklift.glb`
 3. Place in `/public/assets/models/`
-4. Test → Model faces left ❌
-5. Rename to: `forklift-rotY90.glb`
+4. Test in app → Model faces left ❌
+5. **Just rename the same file**: `forklift-rotY90.glb`
 6. Restart dev server
 7. Test → Model faces forward ✅
 
+**Note**: The system tries common rotation patterns automatically. If your model loads rotated wrong, just rename the file with the appropriate rotation tag!
+
+### Pattern Matching Details
+
+The system automatically tries these patterns (in order):
+1. Base name (`forklift.glb`, `forklift.gltf`)
+2. Common rotations (`forklift-rotY90.glb`, `forklift-rotY-90.glb`, etc.)
+3. Falls back to procedural geometry if no file found
+
+**You only need ONE file per vehicle type.** Name it with the rotation that works!
+
 ### Console Messages
 
-The browser console will show applied rotations:
+The browser console will show which file was loaded:
 ```
-✅ Loaded external model: forklift-rotY90
+✅ Loaded external model: forklift-rotY90.glb
    Applying rotations from filename: X=0° Y=90° Z=0°
 ```
 

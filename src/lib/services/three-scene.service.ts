@@ -176,6 +176,7 @@ export class ThreeSceneService {
   /**
    * Create and add a vehicle to the scene
    * Attempts to load external GLTF model first, falls back to procedural geometry
+   * Searches for files matching vehicle type with optional rotation tags
    */
   createVehicle(vehicle: Vehicle): void {
     // Remove existing vehicle if any
@@ -187,27 +188,65 @@ export class ThreeSceneService {
     }
 
     // Try to load external GLTF model
-    // Support multiple file naming patterns with rotation tags
-    const baseName = vehicle.type;
-    const extensions = ['.glb', '.gltf'];
+    // Generate potential filenames with common rotation patterns
+    const filenameCandidates = this.generateFilenamePatterns(vehicle.type);
     
-    // Try each extension
-    this.tryLoadModelWithExtensions(baseName, extensions, vehicle);
+    // Try loading with different filename patterns
+    this.tryLoadModelWithPatterns(filenameCandidates, vehicle);
   }
   
   /**
-   * Try loading model with different extensions and parse rotation tags from filename
+   * Generate list of potential filenames to try for a vehicle type
+   * Includes base name and common rotation patterns
    */
-  private tryLoadModelWithExtensions(baseName: string, extensions: string[], vehicle: Vehicle, attemptIndex: number = 0): void {
-    if (attemptIndex >= extensions.length) {
-      // No model found with any extension, use procedural geometry
-      console.log(`ℹ️ External model not found for ${vehicle.type}, using procedural geometry`);
+  private generateFilenamePatterns(vehicleType: string): string[] {
+    const patterns: string[] = [];
+    const extensions = ['.glb', '.gltf'];
+    
+    // Common rotation patterns to try (in order of likelihood)
+    const rotationPatterns = [
+      '', // No rotation (base name)
+      '-rotY90',
+      '-rotY-90',
+      '-rotY180',
+      '-rotY270',
+      '-rotZ90',
+      '-rotZ-90',
+      '-rotZ180',
+      '-rotX90',
+      '-rotX-90',
+      '-rotY45',
+      '-rotY-45',
+      '-rotY135',
+      '-rotY-135',
+      '-rotY90-rotZ45',
+      '-rotY-90-rotZ45',
+      '-rotY180-rotZ90'
+    ];
+    
+    // Generate all combinations
+    for (const rotation of rotationPatterns) {
+      for (const ext of extensions) {
+        patterns.push(`${vehicleType}${rotation}${ext}`);
+      }
+    }
+    
+    return patterns;
+  }
+  
+  /**
+   * Try loading model with different filename patterns
+   */
+  private tryLoadModelWithPatterns(patterns: string[], vehicle: Vehicle, attemptIndex: number = 0): void {
+    if (attemptIndex >= patterns.length) {
+      // No model found with any pattern, use procedural geometry
+      console.log(`ℹ️ External model not found for ${vehicle.type} (tried ${patterns.length} patterns), using procedural geometry`);
       this.createProceduralVehicle(vehicle);
       return;
     }
     
-    const extension = extensions[attemptIndex];
-    const modelPath = `assets/models/${baseName}${extension}`;
+    const filename = patterns[attemptIndex];
+    const modelPath = `assets/models/${filename}`;
     
     this.gltfLoader.load(
       modelPath,
@@ -215,9 +254,10 @@ export class ThreeSceneService {
       (gltf) => {
         const model = gltf.scene;
         
-        // Parse rotation tags from filename
-        const rotations = this.parseRotationTags(baseName);
-        console.log(`✅ Loaded external model: ${baseName}${extension}`);
+        // Parse rotation tags from filename (extract base name without extension)
+        const baseNameWithTags = filename.replace(/\.(glb|gltf)$/i, '');
+        const rotations = this.parseRotationTags(baseNameWithTags);
+        console.log(`✅ Loaded external model: ${filename}`);
         if (rotations.rotX !== 0 || rotations.rotY !== 0 || rotations.rotZ !== 0) {
           console.log(`   Applying rotations from filename: X=${rotations.rotX}° Y=${rotations.rotY}° Z=${rotations.rotZ}°`);
         }
@@ -268,14 +308,15 @@ export class ThreeSceneService {
       },
       // Progress callback
       (xhr) => {
-        if (xhr.total > 0) {
-          console.log(`Loading ${baseName}${extension}: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
+        if (xhr.total > 0 && attemptIndex === 0) {
+          // Only show progress for first attempt to avoid spam
+          console.log(`Loading ${filename}: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
         }
       },
-      // Error callback - try next extension or fallback
+      // Error callback - try next pattern
       (error) => {
-        // Try next extension
-        this.tryLoadModelWithExtensions(baseName, extensions, vehicle, attemptIndex + 1);
+        // Silently try next pattern (don't log errors for every attempt)
+        this.tryLoadModelWithPatterns(patterns, vehicle, attemptIndex + 1);
       }
     );
   }
@@ -919,20 +960,19 @@ export class ThreeSceneService {
     }
 
     // Try to load external container model first
-    // Support rotation tags in filename: container-rotY90-rotZ180.glb
-    const baseName = 'container';
-    const extensions = ['.glb', '.gltf'];
+    // Generate potential filenames with common rotation patterns
+    const filenameCandidates = this.generateFilenamePatterns('container');
     
     // Load containers with a counter to track completion
     let loadedCount = 0;
     let firstLoadAttempted = false;
     
     const attemptLoad = (index: number) => {
-      this.tryLoadContainerModel(baseName, extensions, 0, 
+      this.tryLoadContainerModelWithPatterns(filenameCandidates, 0, 
         // Success callback
-        (containerModel, rotations) => {
+        (containerModel, rotations, filename) => {
           if (!firstLoadAttempted) {
-            console.log(`✅ Loaded external container model: ${baseName}`);
+            console.log(`✅ Loaded external container model: ${filename}`);
             if (rotations.rotX !== 0 || rotations.rotY !== 0 || rotations.rotZ !== 0) {
               console.log(`   Applying rotations: X=${rotations.rotX}° Y=${rotations.rotY}° Z=${rotations.rotZ}°`);
             }
@@ -962,7 +1002,7 @@ export class ThreeSceneService {
         // Error callback
         () => {
           if (loadedCount === 0) {
-            console.log('ℹ️ Container model not found, using procedural geometry');
+            console.log('ℹ️ Container model not found (tried multiple patterns), using procedural geometry');
           }
           loadedCount++;
           
@@ -983,33 +1023,33 @@ export class ThreeSceneService {
   }
   
   /**
-   * Try loading container model with different extensions
+   * Try loading container model with different filename patterns
    */
-  private tryLoadContainerModel(
-    baseName: string, 
-    extensions: string[], 
+  private tryLoadContainerModelWithPatterns(
+    patterns: string[], 
     attemptIndex: number,
-    onSuccess: (model: THREE.Group, rotations: { rotX: number, rotY: number, rotZ: number }) => void,
+    onSuccess: (model: THREE.Group, rotations: { rotX: number, rotY: number, rotZ: number }, filename: string) => void,
     onError: () => void
   ): void {
-    if (attemptIndex >= extensions.length) {
+    if (attemptIndex >= patterns.length) {
       onError();
       return;
     }
     
-    const extension = extensions[attemptIndex];
-    const modelPath = `assets/models/${baseName}${extension}`;
+    const filename = patterns[attemptIndex];
+    const modelPath = `assets/models/${filename}`;
     
     this.gltfLoader.load(
       modelPath,
       (gltf) => {
-        const rotations = this.parseRotationTags(baseName);
-        onSuccess(gltf.scene, rotations);
+        const baseNameWithTags = filename.replace(/\.(glb|gltf)$/i, '');
+        const rotations = this.parseRotationTags(baseNameWithTags);
+        onSuccess(gltf.scene, rotations, filename);
       },
       undefined,
       (error) => {
-        // Try next extension
-        this.tryLoadContainerModel(baseName, extensions, attemptIndex + 1, onSuccess, onError);
+        // Try next pattern
+        this.tryLoadContainerModelWithPatterns(patterns, attemptIndex + 1, onSuccess, onError);
       }
     );
   }
