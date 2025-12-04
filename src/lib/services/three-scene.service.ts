@@ -33,6 +33,8 @@ export class ThreeSceneService {
   private initialControlsTarget: THREE.Vector3 = new THREE.Vector3(0, 2, 0);
   private isTouchDevice: boolean = false;
   private animationLoop: boolean = false; // Flag for loop animation
+  private baseRotation: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }; // Store base rotation from filename
+  private baseTranslation: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }; // Store base translation from filename
 
   /**
    * Initialize the Three.js scene
@@ -203,9 +205,9 @@ export class ThreeSceneService {
     const patterns: string[] = [];
     const extensions = ['.glb', '.gltf'];
     
-    // Common rotation patterns to try (in order of likelihood)
+    // Common rotation and translation patterns to try (in order of likelihood)
     const rotationPatterns = [
-      '', // No rotation (base name)
+      '', // No rotation/translation (base name)
       '-rotY90',
       '-rotY-90',
       '-rotY180',
@@ -221,7 +223,12 @@ export class ThreeSceneService {
       '-rotY-135',
       '-rotY90-rotZ45',
       '-rotY-90-rotZ45',
-      '-rotY180-rotZ90'
+      '-rotY180-rotZ90',
+      // With translation tags
+      '-rotY90-transX0.5',
+      '-rotY-90-transX-0.5',
+      '-transX0.5-transY0.3',
+      '-rotY90-transZ1.0'
     ];
     
     // Generate all combinations
@@ -254,12 +261,25 @@ export class ThreeSceneService {
       (gltf) => {
         const model = gltf.scene;
         
-        // Parse rotation tags from filename (extract base name without extension)
+        // Parse rotation and translation tags from filename (extract base name without extension)
         const baseNameWithTags = filename.replace(/\.(glb|gltf)$/i, '');
         const rotations = this.parseRotationTags(baseNameWithTags);
+        const translations = this.parseTranslationTags(baseNameWithTags);
+        
+        // Store base rotation and translation for use during animation
+        this.baseRotation = {
+          x: rotations.rotX * (Math.PI / 180),
+          y: rotations.rotY * (Math.PI / 180),
+          z: rotations.rotZ * (Math.PI / 180)
+        };
+        this.baseTranslation = translations;
+        
         console.log(`✅ Loaded external model: ${filename}`);
         if (rotations.rotX !== 0 || rotations.rotY !== 0 || rotations.rotZ !== 0) {
           console.log(`   Applying rotations from filename: X=${rotations.rotX}° Y=${rotations.rotY}° Z=${rotations.rotZ}°`);
+        }
+        if (translations.x !== 0 || translations.y !== 0 || translations.z !== 0) {
+          console.log(`   Applying translations from filename: X=${translations.x} Y=${translations.y} Z=${translations.z}`);
         }
         
         // Traverse and ensure materials are properly set
@@ -284,7 +304,7 @@ export class ThreeSceneService {
           }
         });
         
-        // Center and scale the model
+        // Calculate bounding box BEFORE any transformations
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
@@ -294,14 +314,19 @@ export class ThreeSceneService {
         const scale = 3 / maxDim;
         model.scale.setScalar(scale);
         
-        // Center the model
+        // Center the model at origin (important for proper rotation)
         model.position.sub(center.multiplyScalar(scale));
         model.position.y = 0; // Place on ground
         
-        // Apply rotations from filename tags
-        model.rotation.x = rotations.rotX * (Math.PI / 180); // Convert degrees to radians
-        model.rotation.y = rotations.rotY * (Math.PI / 180);
-        model.rotation.z = rotations.rotZ * (Math.PI / 180);
+        // Apply base rotations from filename tags
+        model.rotation.x = this.baseRotation.x;
+        model.rotation.y = this.baseRotation.y;
+        model.rotation.z = this.baseRotation.z;
+        
+        // Apply base translations from filename tags (after rotation)
+        model.position.x += translations.x;
+        model.position.y += translations.y;
+        model.position.z += translations.z;
         
         this.scene.add(model);
         this.vehicleMesh = model;
@@ -322,9 +347,9 @@ export class ThreeSceneService {
   }
   
   /**
-   * Parse rotation tags from filename
-   * Supports tags like: forklift-rotY90-rotZ180.glb
-   * Returns rotations in degrees
+   * Parse rotation and translation tags from filename
+   * Supports tags like: forklift-rotY90-transX0.5-rotZ180.glb
+   * Returns rotations in degrees and translations in units
    */
   private parseRotationTags(filename: string): { rotX: number, rotY: number, rotZ: number } {
     const rotations = { rotX: 0, rotY: 0, rotZ: 0 };
@@ -347,12 +372,44 @@ export class ThreeSceneService {
     
     return rotations;
   }
+  
+  /**
+   * Parse translation tags from filename
+   * Supports tags like: forklift-transX0.5-transY-0.3-transZ1.2.glb
+   * Returns translations in units (can be decimal)
+   */
+  private parseTranslationTags(filename: string): { x: number, y: number, z: number } {
+    const translations = { x: 0, y: 0, z: 0 };
+    
+    // Pattern: -transX<value>, -transY<value>, -transZ<value>
+    // Examples: -transX0.5, -transY-0.3, -transZ1.2
+    // Support both positive and negative values, including decimals
+    const transXMatch = filename.match(/-transX(-?\d+\.?\d*)/i);
+    const transYMatch = filename.match(/-transY(-?\d+\.?\d*)/i);
+    const transZMatch = filename.match(/-transZ(-?\d+\.?\d*)/i);
+    
+    if (transXMatch) {
+      translations.x = parseFloat(transXMatch[1]);
+    }
+    if (transYMatch) {
+      translations.y = parseFloat(transYMatch[1]);
+    }
+    if (transZMatch) {
+      translations.z = parseFloat(transZMatch[1]);
+    }
+    
+    return translations;
+  }
 
   /**
    * Create vehicle using procedural geometry (fallback)
    */
   private createProceduralVehicle(vehicle: Vehicle): void {
     const vehicleGroup = new THREE.Group();
+    
+    // Reset base rotation and translation for procedural models
+    this.baseRotation = { x: 0, y: 0, z: 0 };
+    this.baseTranslation = { x: 0, y: 0, z: 0 };
 
     switch (vehicle.type) {
       case 'forklift':
@@ -1223,14 +1280,21 @@ export class ThreeSceneService {
       const position = this.getPositionOnPath(this.animationProgress);
       const nextPosition = this.getPositionOnPath(Math.min(this.animationProgress + 0.01, 1));
       
-      // Set vehicle position
-      this.vehicleMesh.position.copy(position);
+      // Set vehicle position (preserve base translation)
+      this.vehicleMesh.position.set(
+        position.x + this.baseTranslation.x,
+        position.y + this.baseTranslation.y,
+        position.z + this.baseTranslation.z
+      );
       
-      // Rotate vehicle to face direction of travel
+      // Rotate vehicle to face direction of travel (preserve base rotation)
       const direction = new THREE.Vector3().subVectors(nextPosition, position).normalize();
       if (direction.length() > 0.01) {
-        const angle = Math.atan2(direction.x, direction.z);
-        this.vehicleMesh.rotation.y = angle;
+        const animationAngle = Math.atan2(direction.x, direction.z);
+        // Combine base rotation with animation rotation
+        this.vehicleMesh.rotation.x = this.baseRotation.x;
+        this.vehicleMesh.rotation.y = this.baseRotation.y + animationAngle;
+        this.vehicleMesh.rotation.z = this.baseRotation.z;
       }
       
       // Camera follows vehicle based on current view
@@ -1331,10 +1395,16 @@ export class ThreeSceneService {
    * Reset camera to initial/center position
    */
   resetCamera(): void {
-    // Reset vehicle position to origin
+    // Reset vehicle position to origin (preserve base rotation and translation)
     if (this.vehicleMesh) {
-      this.vehicleMesh.position.set(0, 0, 0);
-      this.vehicleMesh.rotation.y = 0;
+      this.vehicleMesh.position.set(
+        this.baseTranslation.x,
+        this.baseTranslation.y,
+        this.baseTranslation.z
+      );
+      this.vehicleMesh.rotation.x = this.baseRotation.x;
+      this.vehicleMesh.rotation.y = this.baseRotation.y;
+      this.vehicleMesh.rotation.z = this.baseRotation.z;
     }
     
     // Reset camera to initial orbital view

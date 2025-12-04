@@ -16,13 +16,13 @@ For each vehicle type, place **any one** of these naming patterns:
 
 **The app will automatically detect and load the first matching file for each type!**
 
-## 🎯 Rotation Tags (Easy Model Alignment!)
+## 🎯 Rotation & Translation Tags (Easy Model Alignment!)
 
-**No need to edit the model in 3D software!** You can now rotate models using filename tags:
+**No need to edit the model in 3D software!** You can now rotate AND translate (move) models using filename tags:
 
 ### Filename Format
 
-`{vehicle-type}-rotY{degrees}-rotZ{degrees}.glb`
+`{vehicle-type}-rotY{degrees}-transX{value}-rotZ{degrees}.glb`
 
 ### Rotation Tag Examples
 
@@ -33,13 +33,28 @@ For each vehicle type, place **any one** of these naming patterns:
 - `forklift-rotY90-rotZ45.glb` - Multiple rotations (Y first, then Z)
 - `container-rotY180-rotX45.glb` - Container with compound rotation
 
-### Supported Rotation Tags
+### Translation Tag Examples (NEW!)
 
+- `pallet-jack-rotY90-transX0.5.glb` - Rotate 90° AND move 0.5 units right
+- `forklift-transX-0.3-transZ1.2.glb` - Move left 0.3 and forward 1.2 units
+- `stacker-rotY180-transY0.2.glb` - Rotate 180° and lift 0.2 units up
+- `forklift-rotY90-transX0.5-transY0.1-transZ-0.3.glb` - Combined rotation and translation
+
+### Supported Tags
+
+**Rotation Tags:**
 - `-rotX{degrees}` - Rotate around X axis (pitch: up/down tilt)
 - `-rotY{degrees}` - Rotate around Y axis (yaw: left/right turn)
 - `-rotZ{degrees}` - Rotate around Z axis (roll: sideways tilt)
 
-Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-45`)
+**Translation Tags (NEW!):**
+- `-transX{value}` - Move along X axis (left/right)
+- `-transY{value}` - Move along Y axis (up/down)
+- `-transZ{value}` - Move along Z axis (forward/back)
+
+**Values:**
+- Rotation: positive or negative integers (e.g., `90`, `-90`, `180`, `45`)
+- Translation: positive or negative decimals (e.g., `0.5`, `-0.3`, `1.2`, `-1.5`)
 
 ### How It Works
 
@@ -50,7 +65,7 @@ Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-4
 5. **No need to open Blender or other 3D software!**
 6. Restart the dev server and the model will be loaded with proper rotation
 
-### Common Rotation Fixes
+### Common Rotation & Translation Fixes
 
 | Issue | Solution |
 |-------|----------|
@@ -59,6 +74,9 @@ Values can be positive or negative integers (e.g., `90`, `-90`, `180`, `45`, `-4
 | Model faces backward | `forklift-rotY180.glb` |
 | Model is sideways | `forklift-rotZ90.glb` |
 | Model is upside-down | `forklift-rotZ180.glb` |
+| Model rotates off-center | `forklift-rotY90-transX0.5.glb` (adjust translation to center) |
+| Model too high/low | `forklift-transY0.2.glb` or `forklift-transY-0.3.glb` |
+| Model needs positioning | Combine rotation + translation tags |
 
 ### Example Workflow
 
@@ -85,8 +103,9 @@ The system automatically tries these patterns (in order):
 
 The browser console will show which file was loaded:
 ```
-✅ Loaded external model: forklift-rotY90.glb
+✅ Loaded external model: forklift-rotY90-transX0.5.glb
    Applying rotations from filename: X=0° Y=90° Z=0°
+   Applying translations from filename: X=0.5 Y=0 Z=0
 ```
 
 ## Model Requirements
