@@ -1,0 +1,62 @@
+[
+  {
+    "id": "forklift-1",
+    "name": "Forklift",
+    "type": "forklift",
+    "maxCapacity": 2000,
+    "icon": "🚜",
+    "modelConfig": {
+      "filename": "forklift.glb",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  },
+  {
+    "id": "pallet-jack-1",
+    "name": "Pallet Jack",
+    "type": "pallet-jack",
+    "maxCapacity": 1000,
+    "icon": "🛒",
+    "modelConfig": {
+      "filename": "pallet-jack.glb",
+      "rotation": {
+        "x": 0,
+        "y": -90,
+        "z": 0
+      },
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  },
+  {
+    "id": "stacker-1",
+    "name": "Stacker",
+    "type": "stacker",
+    "maxCapacity": 1500,
+    "icon": "📦",
+    "modelConfig": {
+      "filename": "stacker.glb",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  }
+]

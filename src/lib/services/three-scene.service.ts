@@ -33,6 +33,8 @@ export class ThreeSceneService {
   private initialControlsTarget: THREE.Vector3 = new THREE.Vector3(0, 2, 0);
   private isTouchDevice: boolean = false;
   private animationLoop: boolean = false; // Flag for loop animation
+  private baseRotation: THREE.Euler = new THREE.Euler(0, 0, 0); // Base rotation from config
+  private baseTranslation: THREE.Vector3 = new THREE.Vector3(0, 0, 0); // Base translation from config
 
   /**
    * Initialize the Three.js scene
@@ -186,14 +188,41 @@ export class ThreeSceneService {
       this.containerMeshes = [];
     }
 
+    // Reset base transformations
+    this.baseRotation.set(0, 0, 0);
+    this.baseTranslation.set(0, 0, 0);
+
+    // Get model configuration from vehicle
+    const modelConfig = vehicle.modelConfig;
+    const modelFilename = modelConfig?.filename || `${vehicle.type}.glb`;
+    
+    // Store base transformations for use during animation
+    if (modelConfig) {
+      this.baseRotation.set(
+        modelConfig.rotation.x * (Math.PI / 180),
+        modelConfig.rotation.y * (Math.PI / 180),
+        modelConfig.rotation.z * (Math.PI / 180)
+      );
+      this.baseTranslation.set(
+        modelConfig.translation.x,
+        modelConfig.translation.y,
+        modelConfig.translation.z
+      );
+      console.log(`📋 Model config loaded:`, {
+        filename: modelFilename,
+        rotation: `X=${modelConfig.rotation.x}° Y=${modelConfig.rotation.y}° Z=${modelConfig.rotation.z}°`,
+        translation: `X=${modelConfig.translation.x} Y=${modelConfig.translation.y} Z=${modelConfig.translation.z}`
+      });
+    }
+
     // Try to load external GLTF model
-    const modelPath = `assets/models/${vehicle.type}.glb`;
+    const modelPath = `assets/models/${modelFilename}`;
     
     this.gltfLoader.load(
       modelPath,
       // Success callback
       (gltf) => {
-        console.log(`✅ Loaded external model for ${vehicle.type}`);
+        console.log(`✅ Loaded external model: ${modelFilename}`);
         const model = gltf.scene;
         
         // Traverse and ensure materials are properly set
@@ -232,21 +261,22 @@ export class ThreeSceneService {
         model.position.sub(center.multiplyScalar(scale));
         model.position.y = 0; // Place on ground
         
-        // Fix rotation for pallet-jack (rotated 90 degrees to face forward)
-        if (vehicle.type === 'pallet-jack') {
-          model.rotation.y = -Math.PI / 2; // Rotate -90 degrees
-        }
+        // Apply base rotation from configuration
+        model.rotation.copy(this.baseRotation);
+        
+        // Apply base translation from configuration
+        model.position.add(this.baseTranslation);
         
         this.scene.add(model);
         this.vehicleMesh = model;
       },
       // Progress callback
       (xhr) => {
-        console.log(`Loading ${vehicle.type}: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
+        console.log(`Loading ${modelFilename}: ${(xhr.loaded / xhr.total * 100).toFixed(0)}%`);
       },
       // Error callback - fallback to procedural geometry
       (error) => {
-        console.log(`ℹ️ External model not found for ${vehicle.type}, using procedural geometry`);
+        console.log(`ℹ️ External model not found (${modelFilename}), using procedural geometry`);
         console.error('Error details:', error);
         this.createProceduralVehicle(vehicle);
       }
@@ -1082,14 +1112,19 @@ export class ThreeSceneService {
       const position = this.getPositionOnPath(this.animationProgress);
       const nextPosition = this.getPositionOnPath(Math.min(this.animationProgress + 0.01, 1));
       
-      // Set vehicle position
-      this.vehicleMesh.position.copy(position);
+      // Set vehicle position (add base translation to path position)
+      this.vehicleMesh.position.copy(position).add(this.baseTranslation);
       
       // Rotate vehicle to face direction of travel
       const direction = new THREE.Vector3().subVectors(nextPosition, position).normalize();
       if (direction.length() > 0.01) {
         const angle = Math.atan2(direction.x, direction.z);
-        this.vehicleMesh.rotation.y = angle;
+        // Combine animation rotation with base rotation from configuration
+        this.vehicleMesh.rotation.set(
+          this.baseRotation.x,
+          this.baseRotation.y + angle,  // Add animation angle to base rotation
+          this.baseRotation.z
+        );
       }
       
       // Camera follows vehicle based on current view
@@ -1190,10 +1225,10 @@ export class ThreeSceneService {
    * Reset camera to initial/center position
    */
   resetCamera(): void {
-    // Reset vehicle position to origin
+    // Reset vehicle position to origin (with base translation applied)
     if (this.vehicleMesh) {
-      this.vehicleMesh.position.set(0, 0, 0);
-      this.vehicleMesh.rotation.y = 0;
+      this.vehicleMesh.position.copy(this.baseTranslation);
+      this.vehicleMesh.rotation.copy(this.baseRotation);
     }
     
     // Reset camera to initial orbital view

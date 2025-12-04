@@ -1,61 +1,115 @@
-# 3D Models Directory
+# 3D Model Configuration
 
-Place your GLTF/GLB 3D models here for the warehouse vehicles.
+This directory contains 3D models for warehouse vehicles and the configuration file that controls how they are loaded and transformed.
 
-## Required Files
+## Configuration File
 
-- `forklift.glb` or `forklift.gltf` - Forklift model
-- `pallet-jack.glb` or `pallet-jack.gltf` - Pallet jack model  
-- `stacker.glb` or `stacker.gltf` - Stacker model
-- `container.glb` or `container.gltf` - Container/bin model (optional)
+**File**: `vehicles-config.json`
+
+This JSON file defines all vehicle types, their 3D model filenames, and transformation properties (rotation and translation).
+
+### Configuration Structure
+
+```json
+{
+  "id": "forklift-1",
+  "name": "Forklift",
+  "type": "forklift",
+  "maxCapacity": 2000,
+  "icon": "🚜",
+  "modelConfig": {
+    "filename": "forklift.glb",
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  }
+}
+```
+
+## Model Files
+
+Place your GLTF/GLB model files in this directory with the filenames specified in `vehicles-config.json`.
+
+**Example files**:
+- `forklift.glb`
+- `pallet-jack.glb`
+- `stacker.glb`
+- `container.glb` (optional, for containers)
+
+## Rotation Configuration
+
+Rotation values are in **degrees** and are applied around each axis:
+
+- **X-axis (rotX)**: Pitch (up/down tilt)
+- **Y-axis (rotY)**: Yaw (left/right turn) - Example: `-90` rotates 90° to the right
+- **Z-axis (rotZ)**: Roll (sideways tilt)
+
+### Common Rotation Fixes
+
+| Issue | Solution |
+|-------|----------|
+| Model faces left | `"y": 90` |
+| Model faces right | `"y": -90` |
+| Model faces backward | `"y": 180` |
+
+## Translation Configuration
+
+Translation values are in **Three.js units** and move the model along each axis:
+
+- **X-axis (transX)**: Left/Right (Positive = right, Negative = left)
+- **Y-axis (transY)**: Up/Down (Positive = up, Negative = down)
+- **Z-axis (transZ)**: Forward/Backward (Positive = forward, Negative = backward)
+
+### Use Case: Off-Center Rotation Fix
+
+If a model rotates around an incorrect pivot point, use translation to adjust:
+
+```json
+{
+  "filename": "pallet-jack.glb",
+  "rotation": { "x": 0, "y": -90, "z": 0 },
+  "translation": { "x": 0.5, "y": 0, "z": 0 }
+}
+```
+
+## Persistence During Animation
+
+All rotation and translation values are **preserved throughout animation**:
+- On load: Base transformations applied
+- During animation: Base transformations combined with animation
+- On reset: Model returns with base transformations applied
 
 ## Model Requirements
 
-- **Format**: GLTF (.gltf) or GLB (.glb) - GLB is recommended (binary, smaller size)
-- **Size**: Keep files under 10MB for good loading performance
-- **Scale**: Models will be automatically scaled to fit the scene (approximately 3 units height)
-- **Textures**: Should be embedded in GLB or placed in the same directory
-- **Origin**: Model should be centered at origin with base at Y=0
+- **Format**: GLTF (.gltf) or GLB (.glb)
+- **Size**: Under 10MB recommended
+- **Scale**: Auto-scaled to ~3 units height
+- **Textures**: Embedded in GLB (recommended)
+- **Origin**: Centered at origin with base at Y=0
+- **Coordinate System**: Forward = -Z, Up = +Y, Right = +X
 
-## Where to Find Models
+## Adding a New Vehicle
 
-Good sources for free/paid 3D models:
+1. Add model file to this directory
+2. Edit `vehicles-config.json` and add new entry
+3. Restart dev server (`npm start`)
+4. Test and adjust rotation/translation as needed
 
-- **Sketchfab**: https://sketchfab.com/ (many free models, use "Download 3D Model" → GLTF format)
-- **TurboSquid**: https://www.turbosquid.com/
-- **CGTrader**: https://www.cgtrader.com/
-- **Free3D**: https://free3d.com/
+## Model Sources
 
-## Example from Sketchfab
+- [Sketchfab](https://sketchfab.com/)
+- [TurboSquid](https://www.turbosquid.com/)
+- [CGTrader](https://www.cgtrader.com/)
+- [Free3D](https://free3d.com/)
 
-1. Go to https://skfb.ly/pE768 (or any forklift model)
-2. Click "Download 3D Model"
-3. Select "Autoconverted format (glTF)"
-4. Extract the ZIP file
-5. Rename the `.glb` file to `forklift.glb`
-6. Place in this directory
+## See Also
 
-## Texture Issues
-
-If your model loads but textures are missing:
-1. Ensure textures are embedded in the GLB file (recommended)
-2. Or place texture files in the same directory as the .gltf file
-3. Check that texture paths in the .gltf file are relative, not absolute
-4. Use GLB format for best compatibility (it embeds everything)
-
-## Fallback Behavior
-
-If external models are not found, the application will automatically use procedurally generated geometric models as fallback. This ensures the app always works even without custom models.
-
-## Container Models
-
-Containers/bins can also be loaded as external models. If `container.glb` is present, it will be used for all container instances. Otherwise, procedural geometry is used.
-
-## Testing
-
-After adding models:
-1. Restart the dev server (`npm start`)
-2. Select the vehicle type
-3. Check the browser console for loading messages:
-   - ✅ "Loaded external model for {type}" = Success
-   - ℹ️ "External model not found..." = Using fallback geometry
+- `ROTATION_GUIDE.md` - Detailed coordinate system information
+- `README.md` (project root) - Overall project documentation
