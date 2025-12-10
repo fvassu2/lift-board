@@ -1,0 +1,60 @@
+{
+  "name": "lift-board",
+  "version": "1.0.0",
+  "description": "A modern Angular 19 tablet dashboard for warehouse forklift operators with 3D vehicle visualization and RFID validation",
+  "keywords": [
+    "angular",
+    "warehouse",
+    "forklift",
+    "3d",
+    "threejs",
+    "rfid",
+    "tablet",
+    "dashboard"
+  ],
+  "author": "fvassu2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fvassu2/lift-board.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fvassu2/lift-board/issues"
+  },
+  "homepage": "https://github.com/fvassu2/lift-board#readme",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": false,
+  "dependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/compiler": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/forms": "^19.2.0",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@angular/router": "^19.2.0",
+    "@types/three": "^0.181.0",
+    "rxjs": "~7.8.0",
+    "three": "^0.181.2",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^19.2.19",
+    "@angular/cli": "^19.2.19",
+    "@angular/compiler-cli": "^19.2.0",
+    "@types/jasmine": "~5.1.0",
+    "jasmine-core": "~5.6.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "typescript": "~5.7.2"
+  }
+}
