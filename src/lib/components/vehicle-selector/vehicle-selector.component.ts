@@ -14,7 +14,7 @@ import { Vehicle } from '../../models';
     <div class="vehicle-selector">
       <h2>Select Vehicle</h2>
       <div class="vehicle-grid">
-        @for (vehicle of vehicles; track vehicle.id) {
+        @for (vehicle of vehicles(); track vehicle.id) {
           <button 
             class="vehicle-card"
             [class.selected]="isSelected(vehicle)"
@@ -93,7 +93,7 @@ import { Vehicle } from '../../models';
 })
 export class VehicleSelectorComponent {
   private vehicleService = inject(VehicleService);
-  
+
   vehicles = this.vehicleService.getVehicles();
   selectedVehicle = this.vehicleService.getSelectedVehicle();
 

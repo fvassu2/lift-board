@@ -24,7 +24,7 @@ export class VehicleService {
     try {
       const response = await fetch('assets/models/vehicles-config.json');
       if (response.ok) {
-        const vehicles = await response.json();
+        const vehicles = await response.json() as Vehicle[];
         this.vehiclesSignal.set(vehicles);
         console.log('✅ Vehicle configurations loaded:', vehicles.length, 'vehicles');
       } else {
@@ -41,7 +41,7 @@ export class VehicleService {
    * Fallback to default vehicle configuration if JSON loading fails
    */
   private useDefaultVehicles(): void {
-    const defaultVehicles = [
+    const defaultVehicles: Vehicle[] = [
       {
         id: 'forklift-1',
         name: 'Forklift',

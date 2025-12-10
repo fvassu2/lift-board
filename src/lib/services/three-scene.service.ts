@@ -41,10 +41,10 @@ export class ThreeSceneService {
    */
   initScene(canvas: HTMLCanvasElement, width: number, height: number): void {
     this.canvas = canvas;
-    
+
     // Detect if device supports touch
     this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
+
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
@@ -67,7 +67,7 @@ export class ThreeSceneService {
     this.controls.maxDistance = 50;
     this.controls.maxPolarAngle = Math.PI / 2; // Prevent going below ground
     this.controls.target.copy(this.initialControlsTarget);
-    
+
     // Configure controls based on device type
     this.configureControls();
 
@@ -104,27 +104,27 @@ export class ThreeSceneService {
         MIDDLE: THREE.MOUSE.DOLLY,
         RIGHT: THREE.MOUSE.PAN
       };
-      
+
       // Override to use Ctrl+Left for pan
       const domElement = this.controls.domElement;
-      
+
       if (domElement) {
         let ctrlPressed = false;
-        
+
         domElement.addEventListener('keydown', (e) => {
           if (e.ctrlKey || e.metaKey) {
             ctrlPressed = true;
             this.controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
           }
         });
-        
+
         domElement.addEventListener('keyup', (e) => {
           if (!e.ctrlKey && !e.metaKey) {
             ctrlPressed = false;
             this.controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
           }
         });
-        
+
         domElement.addEventListener('mousedown', (e) => {
           if (e.ctrlKey || e.metaKey) {
             this.controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
@@ -195,7 +195,7 @@ export class ThreeSceneService {
     // Get model configuration from vehicle
     const modelConfig = vehicle.modelConfig;
     const modelFilename = modelConfig?.filename || `${vehicle.type}.glb`;
-    
+
     // Store base transformations for use during animation
     if (modelConfig) {
       this.baseRotation.set(
@@ -217,21 +217,21 @@ export class ThreeSceneService {
 
     // Try to load external GLTF model
     const modelPath = `assets/models/${modelFilename}`;
-    
+
     this.gltfLoader.load(
       modelPath,
       // Success callback
       (gltf) => {
         console.log(`✅ Loaded external model: ${modelFilename}`);
         const model = gltf.scene;
-        
+
         // Traverse and ensure materials are properly set
         model.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             // Enable shadows
             child.castShadow = true;
             child.receiveShadow = true;
-            
+
             // Ensure textures are properly configured
             if (child.material) {
               if (Array.isArray(child.material)) {
@@ -246,27 +246,27 @@ export class ThreeSceneService {
             }
           }
         });
-        
+
         // Center and scale the model
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
-        
+
         // Normalize scale to approximately 3 units height
         const maxDim = Math.max(size.x, size.y, size.z);
         const scale = 3 / maxDim;
         model.scale.setScalar(scale);
-        
+
         // Center the model
         model.position.sub(center.multiplyScalar(scale));
         model.position.y = 0; // Place on ground
-        
+
         // Apply base rotation from configuration
         model.rotation.copy(this.baseRotation);
-        
+
         // Apply base translation from configuration
         model.position.add(this.baseTranslation);
-        
+
         this.scene.add(model);
         this.vehicleMesh = model;
       },
@@ -311,21 +311,21 @@ export class ThreeSceneService {
    */
   private createForklift(group: THREE.Group): void {
     // Materials
-    const bodyMaterial = new THREE.MeshStandardMaterial({ 
+    const bodyMaterial = new THREE.MeshStandardMaterial({
       color: 0xff6b00,
       metalness: 0.4,
       roughness: 0.6
     });
-    const metalMaterial = new THREE.MeshStandardMaterial({ 
+    const metalMaterial = new THREE.MeshStandardMaterial({
       color: 0xcccccc,
       metalness: 0.8,
       roughness: 0.3
     });
-    const wheelMaterial = new THREE.MeshStandardMaterial({ 
+    const wheelMaterial = new THREE.MeshStandardMaterial({
       color: 0x222222,
       roughness: 0.9
     });
-    const glassMaterial = new THREE.MeshStandardMaterial({ 
+    const glassMaterial = new THREE.MeshStandardMaterial({
       color: 0x88ccff,
       transparent: true,
       opacity: 0.4,
@@ -380,12 +380,12 @@ export class ThreeSceneService {
     // Wheels - larger and more detailed
     const wheelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.35, 20);
     const rimGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.36, 16);
-    const rimMaterial = new THREE.MeshStandardMaterial({ 
+    const rimMaterial = new THREE.MeshStandardMaterial({
       color: 0x666666,
       metalness: 0.7,
       roughness: 0.3
     });
-    
+
     const wheelPositions = [
       { x: -1.0, z: 1.3 },
       { x: 1.0, z: 1.3 },
@@ -410,7 +410,7 @@ export class ThreeSceneService {
     const mastWidth = 0.15;
     const mastHeight = 3.5;
     const mastGeometry = new THREE.BoxGeometry(mastWidth, mastHeight, 0.15);
-    
+
     const mast1 = new THREE.Mesh(mastGeometry, metalMaterial);
     mast1.position.set(-0.4, 2.3, 1.6);
     group.add(mast1);
@@ -435,7 +435,7 @@ export class ThreeSceneService {
 
     // Forks - realistic proportions
     const forkGeometry = new THREE.BoxGeometry(0.12, 0.08, 1.8);
-    
+
     const fork1 = new THREE.Mesh(forkGeometry, metalMaterial);
     fork1.position.set(-0.35, 0.5, 2.6);
     group.add(fork1);
@@ -456,12 +456,12 @@ export class ThreeSceneService {
 
     // Hydraulic cylinders
     const cylinderGeometry = new THREE.CylinderGeometry(0.08, 0.08, 2.5, 12);
-    const cylinderMaterial = new THREE.MeshStandardMaterial({ 
+    const cylinderMaterial = new THREE.MeshStandardMaterial({
       color: 0x444444,
       metalness: 0.6,
       roughness: 0.4
     });
-    
+
     [-0.5, 0.5].forEach(x => {
       const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
       cylinder.position.set(x, 2, 1.5);
@@ -470,7 +470,7 @@ export class ThreeSceneService {
 
     // Counterweight at rear
     const counterweightGeometry = new THREE.BoxGeometry(2.0, 0.6, 0.8);
-    const counterweight = new THREE.Mesh(counterweightGeometry, new THREE.MeshStandardMaterial({ 
+    const counterweight = new THREE.Mesh(counterweightGeometry, new THREE.MeshStandardMaterial({
       color: 0x333333,
       metalness: 0.7,
       roughness: 0.5
@@ -480,12 +480,12 @@ export class ThreeSceneService {
 
     // Headlights
     const lightGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.1, 12);
-    const lightMaterial = new THREE.MeshStandardMaterial({ 
+    const lightMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffaa,
       emissive: 0xffffaa,
       emissiveIntensity: 0.5
     });
-    
+
     [-0.6, 0.6].forEach(x => {
       const light = new THREE.Mesh(lightGeometry, lightMaterial);
       light.rotation.x = Math.PI / 2;
@@ -517,21 +517,21 @@ export class ThreeSceneService {
    */
   private createPalletJack(group: THREE.Group): void {
     // Materials
-    const bodyMaterial = new THREE.MeshStandardMaterial({ 
+    const bodyMaterial = new THREE.MeshStandardMaterial({
       color: 0x2196f3,
       metalness: 0.5,
       roughness: 0.5
     });
-    const metalMaterial = new THREE.MeshStandardMaterial({ 
+    const metalMaterial = new THREE.MeshStandardMaterial({
       color: 0xaaaaaa,
       metalness: 0.8,
       roughness: 0.3
     });
-    const wheelMaterial = new THREE.MeshStandardMaterial({ 
+    const wheelMaterial = new THREE.MeshStandardMaterial({
       color: 0x222222,
       roughness: 0.9
     });
-    const handleMaterial = new THREE.MeshStandardMaterial({ 
+    const handleMaterial = new THREE.MeshStandardMaterial({
       color: 0x444444,
       metalness: 0.6,
       roughness: 0.4
@@ -571,7 +571,7 @@ export class ThreeSceneService {
 
     // Fork arms (longer and more detailed)
     const forkGeometry = new THREE.BoxGeometry(0.12, 0.06, 2.2);
-    
+
     const fork1 = new THREE.Mesh(forkGeometry, metalMaterial);
     fork1.position.set(-0.5, 0.12, 1.3);
     group.add(fork1);
@@ -582,11 +582,11 @@ export class ThreeSceneService {
 
     // Fork rollers (wheels under forks)
     const rollerGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.1, 12);
-    const rollerMaterial = new THREE.MeshStandardMaterial({ 
+    const rollerMaterial = new THREE.MeshStandardMaterial({
       color: 0x555555,
       metalness: 0.6
     });
-    
+
     const rollerPositions = [
       { x: -0.5, z: 0.5 },
       { x: 0.5, z: 0.5 },
@@ -603,7 +603,7 @@ export class ThreeSceneService {
 
     // Main wheels (larger and detailed)
     const wheelGeometry = new THREE.CylinderGeometry(0.22, 0.22, 0.18, 20);
-    
+
     const wheel1 = new THREE.Mesh(wheelGeometry, wheelMaterial);
     wheel1.rotation.z = Math.PI / 2;
     wheel1.position.set(-0.6, 0.22, 0.3);
@@ -623,7 +623,7 @@ export class ThreeSceneService {
 
     // Hydraulic cylinder (visible under pump)
     const cylinderGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.4, 12);
-    const cylinder = new THREE.Mesh(cylinderGeometry, new THREE.MeshStandardMaterial({ 
+    const cylinder = new THREE.Mesh(cylinderGeometry, new THREE.MeshStandardMaterial({
       color: 0x666666,
       metalness: 0.7
     }));
@@ -641,7 +641,7 @@ export class ThreeSceneService {
 
     // Safety decals/stripes
     const stripeGeometry = new THREE.BoxGeometry(1.5, 0.05, 0.15);
-    const stripeMaterial = new THREE.MeshStandardMaterial({ 
+    const stripeMaterial = new THREE.MeshStandardMaterial({
       color: 0xffff00,
       emissive: 0xffff00,
       emissiveIntensity: 0.2
@@ -656,17 +656,17 @@ export class ThreeSceneService {
    */
   private createStacker(group: THREE.Group): void {
     // Materials
-    const bodyMaterial = new THREE.MeshStandardMaterial({ 
+    const bodyMaterial = new THREE.MeshStandardMaterial({
       color: 0x4caf50,
       metalness: 0.4,
       roughness: 0.6
     });
-    const metalMaterial = new THREE.MeshStandardMaterial({ 
+    const metalMaterial = new THREE.MeshStandardMaterial({
       color: 0xbbbbbb,
       metalness: 0.8,
       roughness: 0.2
     });
-    const wheelMaterial = new THREE.MeshStandardMaterial({ 
+    const wheelMaterial = new THREE.MeshStandardMaterial({
       color: 0x222222,
       roughness: 0.9
     });
@@ -679,7 +679,7 @@ export class ThreeSceneService {
 
     // Battery compartment
     const batteryGeometry = new THREE.BoxGeometry(1.5, 0.5, 1.2);
-    const battery = new THREE.Mesh(batteryGeometry, new THREE.MeshStandardMaterial({ 
+    const battery = new THREE.Mesh(batteryGeometry, new THREE.MeshStandardMaterial({
       color: 0x333333,
       metalness: 0.3
     }));
@@ -696,7 +696,7 @@ export class ThreeSceneService {
     const buttonGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.05, 12);
     const buttonColors = [0xff0000, 0x00ff00, 0xffff00];
     buttonColors.forEach((color, i) => {
-      const button = new THREE.Mesh(buttonGeometry, new THREE.MeshStandardMaterial({ 
+      const button = new THREE.Mesh(buttonGeometry, new THREE.MeshStandardMaterial({
         color,
         emissive: color,
         emissiveIntensity: 0.3
@@ -708,7 +708,7 @@ export class ThreeSceneService {
 
     // Handle bars (T-shaped)
     const handleBarGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12);
-    const handleBar = new THREE.Mesh(handleBarGeometry, new THREE.MeshStandardMaterial({ 
+    const handleBar = new THREE.Mesh(handleBarGeometry, new THREE.MeshStandardMaterial({
       color: 0x444444,
       metalness: 0.6
     }));
@@ -726,11 +726,11 @@ export class ThreeSceneService {
     // Wheels (larger and more realistic)
     const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 20);
     const rimGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.31, 16);
-    const rimMaterial = new THREE.MeshStandardMaterial({ 
+    const rimMaterial = new THREE.MeshStandardMaterial({
       color: 0x555555,
       metalness: 0.7
     });
-    
+
     const wheelPositions = [
       { x: -0.8, z: 0.9 },
       { x: 0.8, z: 0.9 },
@@ -753,7 +753,7 @@ export class ThreeSceneService {
 
     // Mast structure (triple telescopic)
     const mastWidth = 0.12;
-    
+
     // Outer mast
     const outerMastGeometry = new THREE.BoxGeometry(mastWidth, 4.5, mastWidth);
     const outerMast1 = new THREE.Mesh(outerMastGeometry, metalMaterial);
@@ -766,14 +766,14 @@ export class ThreeSceneService {
 
     // Middle mast (slightly inside)
     const middleMastGeometry = new THREE.BoxGeometry(mastWidth * 0.8, 4.0, mastWidth * 0.8);
-    const middleMast1 = new THREE.Mesh(middleMastGeometry, new THREE.MeshStandardMaterial({ 
+    const middleMast1 = new THREE.Mesh(middleMastGeometry, new THREE.MeshStandardMaterial({
       color: 0x999999,
       metalness: 0.7
     }));
     middleMast1.position.set(-0.48, 2.8, 0.93);
     group.add(middleMast1);
 
-    const middleMast2 = new THREE.Mesh(middleMastGeometry, new THREE.MeshStandardMaterial({ 
+    const middleMast2 = new THREE.Mesh(middleMastGeometry, new THREE.MeshStandardMaterial({
       color: 0x999999,
       metalness: 0.7
     }));
@@ -790,12 +790,12 @@ export class ThreeSceneService {
 
     // Hydraulic lift cylinders
     const cylinderGeometry = new THREE.CylinderGeometry(0.06, 0.06, 3.8, 12);
-    const cylinderMaterial = new THREE.MeshStandardMaterial({ 
+    const cylinderMaterial = new THREE.MeshStandardMaterial({
       color: 0x555555,
       metalness: 0.7,
       roughness: 0.3
     });
-    
+
     [-0.45, 0.45].forEach(x => {
       const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
       cylinder.position.set(x, 2.5, 0.85);
@@ -803,7 +803,7 @@ export class ThreeSceneService {
 
       // Cylinder pistons (chromed)
       const pistonGeometry = new THREE.CylinderGeometry(0.04, 0.04, 2.5, 12);
-      const piston = new THREE.Mesh(pistonGeometry, new THREE.MeshStandardMaterial({ 
+      const piston = new THREE.Mesh(pistonGeometry, new THREE.MeshStandardMaterial({
         color: 0xdddddd,
         metalness: 0.9,
         roughness: 0.1
@@ -826,7 +826,7 @@ export class ThreeSceneService {
 
     // Forks (adjustable width)
     const forkGeometry = new THREE.BoxGeometry(0.12, 0.08, 1.0);
-    
+
     const fork1 = new THREE.Mesh(forkGeometry, metalMaterial);
     fork1.position.set(-0.45, 0.65, 1.6);
     group.add(fork1);
@@ -848,7 +848,7 @@ export class ThreeSceneService {
     // Chain guides
     const chainGuideGeometry = new THREE.BoxGeometry(0.08, 4.0, 0.08);
     [-0.52, 0.52].forEach(x => {
-      const guide = new THREE.Mesh(chainGuideGeometry, new THREE.MeshStandardMaterial({ 
+      const guide = new THREE.Mesh(chainGuideGeometry, new THREE.MeshStandardMaterial({
         color: 0x666666,
         metalness: 0.5
       }));
@@ -858,7 +858,7 @@ export class ThreeSceneService {
 
     // Safety backrest (load guard)
     const backrestGeometry = new THREE.BoxGeometry(1.1, 1.2, 0.05);
-    const backrest = new THREE.Mesh(backrestGeometry, new THREE.MeshStandardMaterial({ 
+    const backrest = new THREE.Mesh(backrestGeometry, new THREE.MeshStandardMaterial({
       color: 0x666666,
       metalness: 0.6,
       transparent: true,
@@ -869,7 +869,7 @@ export class ThreeSceneService {
 
     // Warning light on top
     const lightGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.12, 12);
-    const light = new THREE.Mesh(lightGeometry, new THREE.MeshStandardMaterial({ 
+    const light = new THREE.Mesh(lightGeometry, new THREE.MeshStandardMaterial({
       color: 0xff6600,
       emissive: 0xff6600,
       emissiveIntensity: 0.5
@@ -896,7 +896,7 @@ export class ThreeSceneService {
 
     // Try to load external container model first
     const containerModelPath = 'assets/models/container.glb';
-    
+
     // Load containers with a counter to track completion
     let loadedCount = 0;
     const attemptLoad = (index: number) => {
@@ -905,16 +905,16 @@ export class ThreeSceneService {
         // Success - use external model
         (gltf) => {
           const containerModel = gltf.scene.clone();
-          
+
           // Scale and position the container
           const box = new THREE.Box3().setFromObject(containerModel);
           const size = box.getSize(new THREE.Vector3());
           const scale = 1.2 / Math.max(size.x, size.y, size.z);
           containerModel.scale.setScalar(scale);
-          
+
           // Position on vehicle (stacked)
           containerModel.position.set(0, 0.5 + (index * 1), 1.5);
-          
+
           // Attach to vehicle
           this.vehicleMesh!.add(containerModel);
           this.containerMeshes.push(containerModel);
@@ -926,10 +926,10 @@ export class ThreeSceneService {
             console.log('ℹ️ Container model not found, using procedural geometry');
           }
           loadedCount++;
-          
+
           const containerGroup = this.createProceduralContainer();
           containerGroup.position.set(0, 0.5 + (index * 1), 1.5);
-          
+
           // Attach to vehicle
           this.vehicleMesh!.add(containerGroup);
           this.containerMeshes.push(containerGroup);
@@ -950,19 +950,19 @@ export class ThreeSceneService {
     const containerGroup = new THREE.Group();
 
     // Main container body with wood texture-like color
-    const containerMaterial = new THREE.MeshStandardMaterial({ 
+    const containerMaterial = new THREE.MeshStandardMaterial({
       color: 0xcd853f,
       roughness: 0.8,
       metalness: 0.1
     });
-    
+
     const containerGeometry = new THREE.BoxGeometry(1.1, 0.9, 1.1);
     const container = new THREE.Mesh(containerGeometry, containerMaterial);
     container.position.set(0, 0.45, 0);
     containerGroup.add(container);
 
     // Pallet base (darker wood)
-    const palletMaterial = new THREE.MeshStandardMaterial({ 
+    const palletMaterial = new THREE.MeshStandardMaterial({
       color: 0x8b4513,
       roughness: 0.9,
       metalness: 0
@@ -981,7 +981,7 @@ export class ThreeSceneService {
     }
 
     // Metal strapping (corner reinforcements)
-    const strapMaterial = new THREE.MeshStandardMaterial({ 
+    const strapMaterial = new THREE.MeshStandardMaterial({
       color: 0x444444,
       roughness: 0.4,
       metalness: 0.8
@@ -1001,7 +1001,7 @@ export class ThreeSceneService {
 
     // Warning labels
     const labelGeometry = new THREE.PlaneGeometry(0.3, 0.3);
-    const labelMaterial = new THREE.MeshStandardMaterial({ 
+    const labelMaterial = new THREE.MeshStandardMaterial({
       color: 0xffff00,
       emissive: 0xffff00,
       emissiveIntensity: 0.2
@@ -1018,14 +1018,14 @@ export class ThreeSceneService {
    */
   setCameraView(view: CameraView): void {
     this.currentView = view;
-    
+
     // If not in mission, set static camera positions
     if (!this.missionActive) {
       this.updateCameraForView();
     }
     // If in mission, camera positioning is handled in animate loop
   }
-  
+
   /**
    * Update camera position for current view (when not following vehicle)
    */
@@ -1057,23 +1057,23 @@ export class ThreeSceneService {
         this.controls.enabled = true;
         break;
     }
-    
+
     this.controls.update();
   }
-  
+
   /**
    * Update first-person camera to be inside vehicle looking forward
    */
   private updateFirstPersonCamera(): void {
     if (!this.vehicleMesh) return;
-    
+
     // Position camera inside the vehicle (slightly elevated, centered)
-    const cameraOffset = new THREE.Vector3(0, 2, 0.5); // Inside cabin, looking forward
+    const cameraOffset = new THREE.Vector3(0, 2, -1.5); // Inside cabin, looking forward
     const worldCameraPos = this.vehicleMesh.localToWorld(cameraOffset.clone());
     this.camera.position.copy(worldCameraPos);
-    
+
     // Calculate forward direction based on vehicle rotation
-    const forward = new THREE.Vector3(0, 0, -3); // Look 3 units ahead
+    const forward = new THREE.Vector3(0, 2, 3); // Look 3 units ahead
     const worldForward = this.vehicleMesh.localToWorld(forward.clone());
     this.camera.lookAt(worldForward);
   }
@@ -1097,7 +1097,7 @@ export class ThreeSceneService {
     // Mission animation - move vehicle along path
     if (this.missionActive && this.vehicleMesh && this.animationPath.length > 1) {
       this.animationProgress += 0.002; // Animation speed
-      
+
       if (this.animationProgress >= 1) {
         if (this.animationLoop) {
           // Loop back to start
@@ -1107,14 +1107,14 @@ export class ThreeSceneService {
           this.missionActive = false; // Stop at end
         }
       }
-      
+
       // Use smooth curve interpolation instead of linear
       const position = this.getPositionOnPath(this.animationProgress);
       const nextPosition = this.getPositionOnPath(Math.min(this.animationProgress + 0.01, 1));
-      
+
       // Set vehicle position (add base translation to path position)
       this.vehicleMesh.position.copy(position).add(this.baseTranslation);
-      
+
       // Rotate vehicle to face direction of travel
       const direction = new THREE.Vector3().subVectors(nextPosition, position).normalize();
       if (direction.length() > 0.01) {
@@ -1126,14 +1126,14 @@ export class ThreeSceneService {
           this.baseRotation.z
         );
       }
-      
+
       // Camera follows vehicle based on current view
       this.updateCameraFollowVehicle();
     }
 
     this.renderer.render(this.scene, this.camera);
   }
-  
+
   /**
    * Get position on path using smooth curve interpolation
    */
@@ -1141,25 +1141,25 @@ export class ThreeSceneService {
     if (this.animationPath.length < 2) {
       return new THREE.Vector3();
     }
-    
+
     // Use Catmull-Rom spline for smooth curves
     const curve = new THREE.CatmullRomCurve3(this.animationPath);
     curve.curveType = 'catmullrom';
     curve.tension = 0.5; // Controls curve tightness
-    
+
     return curve.getPoint(t);
   }
-  
+
   /**
    * Update camera to follow vehicle during mission
    * Camera movement is relative to vehicle position and rotation
    */
   private updateCameraFollowVehicle(): void {
     if (!this.vehicleMesh) return;
-    
+
     const vehiclePos = this.vehicleMesh.position;
     const vehicleRot = this.vehicleMesh.rotation.y;
-    
+
     switch (this.currentView) {
       case 'orbital':
         // Follow from behind and above (relative to vehicle orientation)
@@ -1171,18 +1171,18 @@ export class ThreeSceneService {
         this.camera.position.copy(vehiclePos).add(rotatedOffsetOrbital);
         this.controls.target.copy(vehiclePos).add(new THREE.Vector3(0, 2, 0));
         break;
-        
+
       case 'first-person':
         // Inside vehicle looking forward (always relative to vehicle)
         this.updateFirstPersonCamera();
         break;
-        
+
       case 'top-down':
         // Above vehicle (follows position, not rotation)
         this.camera.position.set(vehiclePos.x, 20, vehiclePos.z);
         this.controls.target.copy(vehiclePos);
         break;
-        
+
       case 'side':
         // Follow from side (relative to vehicle orientation)
         const offsetSide = new THREE.Vector3(12, 5, 0); // Right side in vehicle space
@@ -1216,11 +1216,11 @@ export class ThreeSceneService {
     this.missionActive = false;
     this.animationProgress = 0;
     this.animationLoop = false; // Clear loop flag
-    
+
     // Reset camera to initial position
     this.resetCamera();
   }
-  
+
   /**
    * Reset camera to initial/center position
    */
@@ -1230,13 +1230,13 @@ export class ThreeSceneService {
       this.vehicleMesh.position.copy(this.baseTranslation);
       this.vehicleMesh.rotation.copy(this.baseRotation);
     }
-    
+
     // Reset camera to initial orbital view
     this.camera.position.copy(this.initialCameraPosition);
     this.controls.target.copy(this.initialControlsTarget);
     this.controls.enabled = true;
     this.controls.update();
-    
+
     // Reset to orbital view
     this.currentView = 'orbital';
   }
@@ -1250,24 +1250,24 @@ export class ThreeSceneService {
     const aisle = parts[0] || 'A';
     const rack = parseInt(parts[1] || '5');
     const level = parseInt(parts[2] || '3');
-    
+
     // Generate a path with more waypoints for smooth curves
     // Start position
     const start = new THREE.Vector3(0, 0, 0);
-    
+
     // Create intermediate waypoints for curved path
     const waypoint1 = new THREE.Vector3(rack * 1, 0, 0);
     const waypoint2 = new THREE.Vector3(rack * 1.5, 0, rack * 0.5);
     const waypoint3 = new THREE.Vector3(rack * 2, 0, rack * 1.5);
     const waypoint4 = new THREE.Vector3(rack * 2, 0, rack * 2);
-    
+
     // End position (simulated warehouse location)
     const end = new THREE.Vector3(
       rack * 2,
       0,
       rack * 2 + (aisle.charCodeAt(0) - 65) * 3
     );
-    
+
     // Return path with multiple points for smooth curves
     return [start, waypoint1, waypoint2, waypoint3, waypoint4, end];
   }
