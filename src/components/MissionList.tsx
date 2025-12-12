@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { filterMissions } from '../utils/filters';
 import { formatDistance } from 'date-fns';
 import { it } from 'date-fns/locale';
+import type { MissionStatus } from '../types';
 import './MissionList.css';
 
 const statusLabels: Record<string, string> = {
@@ -36,8 +37,8 @@ export const MissionList = () => {
     [missions, missionFilter]
   );
   
-  const handleStatusChange = (missionId: string, newStatus: string) => {
-    updateMissionStatus(missionId, newStatus as any);
+  const handleStatusChange = (missionId: string, newStatus: MissionStatus) => {
+    updateMissionStatus(missionId, newStatus);
   };
   
   return (

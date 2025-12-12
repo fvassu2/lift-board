@@ -62,13 +62,17 @@ export const filterMissions = (missions: Mission[], filter: MissionFilter): Miss
   });
 };
 
-export const getUniqueValues = <T extends Record<string, any>>(
+export const getUniqueValues = <T extends object>(
   items: T[],
   key: string
 ): string[] => {
   const values = new Set<string>();
   items.forEach((item) => {
-    const value = key.split('.').reduce((obj, k) => obj?.[k], item);
+    const value = key.split('.').reduce((obj: unknown, k: string): unknown => {
+      return obj && typeof obj === 'object' && k in obj 
+        ? (obj as Record<string, unknown>)[k] 
+        : undefined;
+    }, item as unknown);
     if (value) values.add(String(value));
   });
   return Array.from(values).sort();

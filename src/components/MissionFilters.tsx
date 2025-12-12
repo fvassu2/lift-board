@@ -65,7 +65,7 @@ export const MissionFilters = () => {
           <select
             id="mission-assegnazione"
             value={missionFilter.assegnazione || ''}
-            onChange={(e) => handleFilterChange('assegnazione', e.target.value as any)}
+            onChange={(e) => handleFilterChange('assegnazione', e.target.value as 'utente' | 'pubblica')}
           >
             <option value="">Tutte</option>
             <option value="pubblica">Pubbliche</option>
