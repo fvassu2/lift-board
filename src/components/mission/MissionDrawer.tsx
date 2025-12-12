@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, ArrowRight, AlertCircle } from 'lucide-react';
 import type { Mission } from '../../types';
-import { useMissionContext } from '../../contexts/MissionContext';
+import { useMissionContext } from '../../contexts/useMissionContext';
 
 interface MissionDrawerProps {
   isOpen: boolean;
