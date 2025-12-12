@@ -1,0 +1,270 @@
+.rfid-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  gap: 20px;
+}
+
+.rfid-section {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.rfid-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Status Section */
+.status-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.status-section h3 {
+  color: white;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.status-led {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.status-text {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.reader-info,
+.heartbeat-info {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-top: 8px;
+}
+
+/* Stream Section */
+.stream-section {
+  flex: 1;
+  min-height: 250px;
+  max-height: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-stream {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-item {
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #ccc;
+  font-size: 13px;
+}
+
+.message-item.read {
+  border-left-color: #4CAF50;
+}
+
+.message-item.write {
+  border-left-color: #2196F3;
+}
+
+.message-item.error {
+  border-left-color: #F44336;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.message-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.event-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+}
+
+.event-badge.read {
+  background-color: #4CAF50;
+}
+
+.event-badge.write {
+  background-color: #2196F3;
+}
+
+.event-badge.error {
+  background-color: #F44336;
+}
+
+.tag-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: #333;
+}
+
+.bin-id {
+  color: #666;
+  font-size: 12px;
+}
+
+.no-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Notifications Section */
+.notifications-section {
+  max-height: 250px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification.success {
+  border-left-color: #4CAF50;
+  background: #f1f8f4;
+}
+
+.notification.warning {
+  border-left-color: #FF9800;
+  background: #fff8f0;
+}
+
+.notification.error {
+  border-left-color: #F44336;
+  background: #fef5f5;
+}
+
+.notification.info {
+  border-left-color: #2196F3;
+  background: #f0f7ff;
+}
+
+.notification-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.notification.success .notification-icon {
+  color: #4CAF50;
+}
+
+.notification.warning .notification-icon {
+  color: #FF9800;
+}
+
+.notification.error .notification-icon {
+  color: #F44336;
+}
+
+.notification.info .notification-icon {
+  color: #2196F3;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.no-notifications {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 1024px) {
+  .rfid-panel {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 15px;
+  }
+
+  .rfid-section {
+    flex-shrink: 0;
+    min-width: 280px;
+  }
+
+  .stream-section {
+    max-height: 250px;
+  }
+}

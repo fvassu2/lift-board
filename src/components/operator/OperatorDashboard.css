@@ -1,0 +1,86 @@
+.operator-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.rfid-sidebar {
+  width: 320px;
+  background-color: #ffffff;
+  border-left: 1px solid #e0e0e0;
+  overflow-y: auto;
+}
+
+.no-mission {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #666;
+}
+
+.no-mission h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.no-mission p {
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1976D2;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Responsive design for tablets */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .rfid-sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 10px;
+  }
+}
