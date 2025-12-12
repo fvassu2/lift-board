@@ -1,0 +1,58 @@
+.mission-filters {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.mission-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.mission-filters-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.mission-filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.mission-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mission-filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.mission-filter-group select {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.mission-filter-group select:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+@media (max-width: 768px) {
+  .mission-filters-row {
+    grid-template-columns: 1fr;
+  }
+}
