@@ -29,7 +29,7 @@ export const WarehouseMap = () => {
       zones.get(zone)!.push(cell);
     });
     return zones;
-  }, [warehouse.celle]);
+  }, [warehouse]);
   
   return (
     <div className="warehouse-map">
