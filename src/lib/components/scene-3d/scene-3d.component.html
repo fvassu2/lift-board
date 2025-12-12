@@ -1,0 +1,16 @@
+<div class="scene-container">
+  <canvas #canvas></canvas>
+  <div class="camera-controls">
+    <button 
+      *ngFor="let view of cameraViews"
+      [class.active]="currentView === view"
+      (click)="switchCamera(view)">
+      {{ view | titlecase }}
+    </button>
+  </div>
+  @if (!hasVehicle) {
+    <div class="no-vehicle-message">
+      <p>👆 Please select a vehicle to begin</p>
+    </div>
+  }
+</div>
