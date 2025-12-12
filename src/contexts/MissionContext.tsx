@@ -1,29 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { useState, useCallback, type ReactNode } from 'react';
 import type { Mission, MissionStatus, AnimationState } from '../types';
-
-interface MissionContextType {
-  currentMission: Mission | null;
-  myMissions: Mission[];
-  publicMissions: Mission[];
-  animationState: AnimationState;
-  setCurrentMission: (mission: Mission | null) => void;
-  updateMissionStatus: (missionId: string, status: MissionStatus) => void;
-  assignMission: (missionId: string, operatorId: string) => void;
-  confirmPickup: (missionId: string) => void;
-  confirmDelivery: (missionId: string) => void;
-  updateBinsProgress: (missionId: string, completed: number) => void;
-  setAnimationState: (state: AnimationState) => void;
-}
-
-const MissionContext = createContext<MissionContextType | undefined>(undefined);
-
-export const useMissionContext = () => {
-  const context = useContext(MissionContext);
-  if (!context) {
-    throw new Error('useMissionContext must be used within MissionProvider');
-  }
-  return context;
-};
+import { MissionContext, type MissionContextType } from './MissionContextDefinition';
 
 interface MissionProviderProps {
   children: ReactNode;
@@ -155,7 +132,7 @@ export const MissionProvider: React.FC<MissionProviderProps> = ({ children }) =>
         setCurrentMission(null);
       }
     }, 2000);
-  }, [updateMissionStatus, myMissions]);
+  }, [updateMissionStatus, myMissions, setCurrentMission]);
 
   const updateBinsProgress = useCallback((missionId: string, completed: number) => {
     const updateProgress = (missions: Mission[]) =>
