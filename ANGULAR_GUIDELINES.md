@@ -297,6 +297,7 @@ export const routes: Routes = [
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
+// import { provideNoopAnimations } from '@angular/platform-browser/animations'; // Per test o reduced motion
 import { provideHttpClient } from '@angular/common/http';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
@@ -304,7 +305,7 @@ import { routes } from './app/app.routes';
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideAnimations(),
+    provideAnimations(), // Usare provideNoopAnimations() per disabilitare animazioni (test, reduced motion)
     provideHttpClient(),
     // Altri providers globali
   ]
@@ -593,9 +594,9 @@ export class UserListComponent implements OnInit {
 <div fxLayout="column">
   <mat-spinner *ngIf="loading"></mat-spinner>
   
-  <mat-error *ngIf="error">
+  <div class="error-message" *ngIf="error">
     {{ error }}
-  </mat-error>
+  </div>
 
   <div *ngIf="!loading && !error">
     <mat-card *ngFor="let user of users">
@@ -604,6 +605,8 @@ export class UserListComponent implements OnInit {
   </div>
 </div>
 ```
+
+**Nota**: Per gli errori generali, usare un div con classe CSS appropriata. La direttiva `mat-error` è specifica per gli errori dei form field.
 
 ## Riferimenti Utili
 
