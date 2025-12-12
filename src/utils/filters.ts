@@ -62,7 +62,7 @@ export const filterMissions = (missions: Mission[], filter: MissionFilter): Miss
   });
 };
 
-export const getUniqueValues = <T>(
+export const getUniqueValues = <T extends object>(
   items: T[],
   key: string
 ): string[] => {
