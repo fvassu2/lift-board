@@ -1,0 +1,17 @@
+<div class="vehicle-selector">
+  <h2>Select Vehicle</h2>
+  <div class="vehicle-grid">
+    @for (vehicle of vehicles(); track vehicle.id) {
+      <button 
+        class="vehicle-card"
+        [class.selected]="isSelected(vehicle)"
+        (click)="onSelect(vehicle)">
+        <div class="vehicle-icon">{{ vehicle.icon }}</div>
+        <div class="vehicle-name">{{ vehicle.name }}</div>
+        <div class="vehicle-capacity">
+          Capacity: {{ vehicle.maxCapacity }}kg
+        </div>
+      </button>
+    }
+  </div>
+</div>

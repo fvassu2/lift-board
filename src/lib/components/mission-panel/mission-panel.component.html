@@ -1,0 +1,84 @@
+<div class="mission-panel">
+  <h2>Mission Control</h2>
+  
+  @if (!currentMission()) {
+    <div class="mission-form">
+      <div class="form-group">
+        <label for="location">Target Location:</label>
+        <input 
+          type="text" 
+          id="location"
+          [(ngModel)]="targetLocation"
+          placeholder="e.g., A-5-3">
+      </div>
+      
+      <div class="form-group">
+        <label for="containers">Container Count:</label>
+        <input 
+          type="number" 
+          id="containers"
+          [(ngModel)]="containerCount"
+          min="1"
+          max="10"
+          placeholder="1-10">
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="loopAnimation">
+          <span>Loop Animation</span>
+        </label>
+      </div>
+      
+      <button 
+        class="btn btn-primary"
+        (click)="startMission()"
+        [disabled]="!targetLocation || containerCount < 1">
+        Start Mission
+      </button>
+    </div>
+  } @else {
+    <div class="mission-info">
+      <div class="info-row">
+        <span class="label">Status:</span>
+        <span class="value status-badge" [class]="'status-' + currentMission()!.status">
+          {{ currentMission()!.status | uppercase }}
+        </span>
+      </div>
+      
+      <div class="info-row">
+        <span class="label">Target Location:</span>
+        <span class="value">{{ currentMission()!.targetLocation }}</span>
+      </div>
+      
+      <div class="info-row">
+        <span class="label">Containers:</span>
+        <span class="value">{{ currentMission()!.containerCount }}</span>
+      </div>
+      
+      <div class="container-ids">
+        <p class="label">Expected Container IDs:</p>
+        <div class="id-list">
+          @for (id of currentMission()!.containerIds; track id) {
+            <span class="container-id">{{ id }}</span>
+          }
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button 
+          class="btn btn-success"
+          (click)="completeMission()">
+          Complete
+        </button>
+        <button 
+          class="btn btn-danger"
+          (click)="cancelMission()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+</div>
