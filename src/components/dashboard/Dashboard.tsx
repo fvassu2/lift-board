@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MissionProvider, useMissionContext } from '../../contexts/MissionContext';
+import { MissionProvider } from '../../contexts/MissionContext';
+import { useMissionContext } from '../../contexts/useMissionContext';
 import { RFIDProvider } from '../../contexts/RFIDContext';
 import Header from './Header';
 import CurrentMissionView from '../mission/CurrentMissionView';

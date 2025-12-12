@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useRFIDContext } from '../../contexts/RFIDContext';
+import { useRFIDContext } from '../../contexts/useRFIDContext';
 import { Wifi, WifiOff, AlertTriangle, Trash2 } from 'lucide-react';
 import type { RFIDConnectionStatus } from '../../types';
 
