@@ -38,16 +38,19 @@ export const RFIDProvider: React.FC<RFIDProviderProps> = ({ children }) => {
 
     // Simulate heartbeat every 5 seconds
     const heartbeatInterval = setInterval(() => {
-      if (status === 'connected') {
-        setLastHeartbeat(new Date().toISOString());
-      }
+      setStatus((currentStatus) => {
+        if (currentStatus === 'connected') {
+          setLastHeartbeat(new Date().toISOString());
+        }
+        return currentStatus;
+      });
     }, 5000);
 
     return () => {
       clearTimeout(connectTimeout);
       clearInterval(heartbeatInterval);
     };
-  }, [addMessage, status]);
+  }, [addMessage]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
