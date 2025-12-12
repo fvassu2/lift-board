@@ -13,55 +13,58 @@ const MissionsDrawer = ({ isOpen, onClose, onSelectMission }: MissionsDrawerProp
   const [publicMissions, setPublicMissions] = useState<Mission[]>([]);
   const [filter, setFilter] = useState({ type: '', priority: '' });
 
+  // Mock data - in real app this would fetch from API
+  const mockAssignedMissions: Mission[] = [
+    {
+      id: 'MISS002',
+      code: 'MISS002',
+      type: 'IN_ENTRATA',
+      status: 'PENDING',
+      priority: 'ALTA',
+      article: {
+        code: 'ART456',
+        description: 'Mele Gala',
+        photoUrl: ''
+      },
+      bins: [],
+      origin: { code: 'B-12', name: 'Cella B-12', type: 'CELLA' },
+      destination: { code: 'LINEA-03', name: 'Linea Produzione 03', type: 'LINEA_PRODUZIONE' },
+      totalWeight: 1200,
+      totalBins: 30,
+      completedBins: 0,
+      estimatedDuration: 25
+    }
+  ];
+
+  const mockPublicMissions: Mission[] = [
+    {
+      id: 'MISS007',
+      code: 'MISS007',
+      type: 'IN_USCITA',
+      status: 'PENDING',
+      priority: 'ALTA',
+      article: {
+        code: 'ART789',
+        description: 'Carote',
+        photoUrl: ''
+      },
+      bins: [],
+      origin: { code: 'C-08', name: 'Cella C-08', type: 'CELLA' },
+      destination: { code: 'LINEA-01', name: 'Linea Produzione 01', type: 'LINEA_PRODUZIONE' },
+      totalWeight: 800,
+      totalBins: 20,
+      completedBins: 0,
+      estimatedDuration: 15
+    }
+  ];
+
   useEffect(() => {
-    // Mock data - in real app this would fetch from API
-    const mockAssignedMissions: Mission[] = [
-      {
-        id: 'MISS002',
-        code: 'MISS002',
-        type: 'IN_ENTRATA',
-        status: 'PENDING',
-        priority: 'ALTA',
-        article: {
-          code: 'ART456',
-          description: 'Mele Gala',
-          photoUrl: ''
-        },
-        bins: [],
-        origin: { code: 'B-12', name: 'Cella B-12', type: 'CELLA' },
-        destination: { code: 'LINEA-03', name: 'Linea Produzione 03', type: 'LINEA_PRODUZIONE' },
-        totalWeight: 1200,
-        totalBins: 30,
-        completedBins: 0,
-        estimatedDuration: 25
-      }
-    ];
-
-    const mockPublicMissions: Mission[] = [
-      {
-        id: 'MISS007',
-        code: 'MISS007',
-        type: 'IN_USCITA',
-        status: 'PENDING',
-        priority: 'ALTA',
-        article: {
-          code: 'ART789',
-          description: 'Carote',
-          photoUrl: ''
-        },
-        bins: [],
-        origin: { code: 'C-08', name: 'Cella C-08', type: 'CELLA' },
-        destination: { code: 'LINEA-01', name: 'Linea Produzione 01', type: 'LINEA_PRODUZIONE' },
-        totalWeight: 800,
-        totalBins: 20,
-        completedBins: 0,
-        estimatedDuration: 15
-      }
-    ];
-
+    // In real app this would fetch from API
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssignedMissions(mockAssignedMissions);
+     
     setPublicMissions(mockPublicMissions);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectMission = (mission: Mission) => {
     onSelectMission(mission);

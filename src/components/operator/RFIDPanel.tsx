@@ -9,6 +9,24 @@ const RFIDPanel = () => {
   const [messages] = useState<RFIDMessage[]>([]);
   const [notifications, setNotifications] = useState<RFIDNotification[]>([]);
 
+  const addNotification = (type: RFIDNotification['type'], message: string) => {
+    const notification: RFIDNotification = {
+      id: Date.now().toString(),
+      type,
+      message,
+      timestamp: new Date().toISOString(),
+      autoDismiss: true
+    };
+    
+    setNotifications(prev => [...prev, notification]);
+
+    if (notification.autoDismiss) {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+      }, 5000);
+    }
+  };
+
   useEffect(() => {
     // Simulate RFID connection
     const connectRFID = () => {
@@ -33,25 +51,8 @@ const RFIDPanel = () => {
     }, 5000);
 
     return () => clearInterval(heartbeatInterval);
+     
   }, []);
-
-  const addNotification = (type: RFIDNotification['type'], message: string) => {
-    const notification: RFIDNotification = {
-      id: Date.now().toString(),
-      type,
-      message,
-      timestamp: new Date().toISOString(),
-      autoDismiss: true
-    };
-    
-    setNotifications(prev => [...prev, notification]);
-
-    if (notification.autoDismiss) {
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== notification.id));
-      }, 5000);
-    }
-  };
 
   const getStatusColor = () => {
     switch (connectionState.status) {

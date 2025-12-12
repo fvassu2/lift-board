@@ -9,88 +9,102 @@ interface ForkliftAnimationProps {
 
 type AnimationState = 'idle' | 'moving_to_origin' | 'loading' | 'moving_to_dest' | 'unloading' | 'returning' | 'completed';
 
+const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+const easeOutCubic = (t: number) => (--t) * t * t + 1;
+const easeInCubic = (t: number) => t * t * t;
+
+const positions = {
+  neutral: { x: 350 },
+  origin: { x: 100 },
+  destination: { x: 600 }
+};
+
 const ForkliftAnimation = ({ mission }: ForkliftAnimationProps) => {
   const [animationState, setAnimationState] = useState<AnimationState>('idle');
   const [forkliftX, setForkliftX] = useState(350);
   const [forkliftY] = useState(150);
   const [binY, setBinY] = useState(170);
   const animationRef = useRef<number | undefined>(undefined);
-
-  const positions = {
-    neutral: { x: 350 },
-    origin: { x: 100 },
-    destination: { x: 600 }
-  };
+  const stateRef = useRef<AnimationState>('idle');
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (mission.status === 'IN_PROGRESS') {
-      startAnimation();
-    } else {
-      setAnimationState('idle');
-      setForkliftX(positions.neutral.x);
-      setBinY(170);
-    }
-
-    return () => {
+    if (mission.status !== 'IN_PROGRESS') {
+      // Reset animation when mission is not in progress
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-    };
-  }, [mission.status]);
+      stateRef.current = 'idle';
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnimationState('idle');
+       
+      setForkliftX(positions.neutral.x);
+       
+      setBinY(170);
+      return;
+    }
 
-  const startAnimation = () => {
-    let startTime = Date.now();
-    
+    // Start animation
+    startTimeRef.current = Date.now();
+    stateRef.current = 'idle';
+
     const animate = () => {
-      const elapsed = Date.now() - startTime;
+      const elapsed = Date.now() - startTimeRef.current;
       
-      if (animationState === 'idle') {
+      if (stateRef.current === 'idle') {
         // Move to origin
         if (elapsed < 2000) {
           const progress = elapsed / 2000;
           setForkliftX(positions.neutral.x + (positions.origin.x - positions.neutral.x) * easeInOutQuad(progress));
+          stateRef.current = 'moving_to_origin';
           setAnimationState('moving_to_origin');
         } else {
+          stateRef.current = 'loading';
           setAnimationState('loading');
-          startTime = Date.now();
+          startTimeRef.current = Date.now();
         }
-      } else if (animationState === 'loading') {
+      } else if (stateRef.current === 'loading') {
         // Loading animation
         if (elapsed < 800) {
           const progress = elapsed / 800;
           setBinY(170 - 30 * easeOutCubic(progress));
         } else {
+          stateRef.current = 'moving_to_dest';
           setAnimationState('moving_to_dest');
-          startTime = Date.now();
+          startTimeRef.current = Date.now();
         }
-      } else if (animationState === 'moving_to_dest') {
+      } else if (stateRef.current === 'moving_to_dest') {
         // Move to destination
         if (elapsed < 2000) {
           const progress = elapsed / 2000;
           setForkliftX(positions.origin.x + (positions.destination.x - positions.origin.x) * easeInOutQuad(progress));
         } else {
+          stateRef.current = 'unloading';
           setAnimationState('unloading');
-          startTime = Date.now();
+          startTimeRef.current = Date.now();
         }
-      } else if (animationState === 'unloading') {
+      } else if (stateRef.current === 'unloading') {
         // Unloading animation
         if (elapsed < 800) {
           const progress = elapsed / 800;
           setBinY(140 + 30 * easeInCubic(progress));
         } else {
+          stateRef.current = 'returning';
           setAnimationState('returning');
-          startTime = Date.now();
+          startTimeRef.current = Date.now();
         }
-      } else if (animationState === 'returning') {
+      } else if (stateRef.current === 'returning') {
         // Return to neutral
         if (elapsed < 2000) {
           const progress = elapsed / 2000;
           setForkliftX(positions.destination.x + (positions.neutral.x - positions.destination.x) * easeInOutQuad(progress));
         } else {
+          stateRef.current = 'completed';
           setAnimationState('completed');
           setTimeout(() => {
+            stateRef.current = 'idle';
             setAnimationState('idle');
-            startTime = Date.now();
+            startTimeRef.current = Date.now();
           }, 1000);
         }
       }
@@ -99,11 +113,13 @@ const ForkliftAnimation = ({ mission }: ForkliftAnimationProps) => {
     };
 
     animationRef.current = requestAnimationFrame(animate);
-  };
 
-  const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-  const easeOutCubic = (t: number) => (--t) * t * t + 1;
-  const easeInCubic = (t: number) => t * t * t;
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [mission.status]);
 
   return (
     <div className="forklift-animation-container">
