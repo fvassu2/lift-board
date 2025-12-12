@@ -1,0 +1,76 @@
+<div class="rfid-validator">
+  <h2>RFID Scanner</h2>
+  
+  <div class="scan-controls">
+    <button 
+      class="btn btn-scan"
+      (click)="simulateScan(false)">
+      Simulate Scan
+    </button>
+    <button 
+      class="btn btn-scan-success"
+      (click)="simulateScan(true)">
+      Simulate Success
+    </button>
+  </div>
+
+  @if (lastScan) {
+    <div 
+      class="scan-result"
+      [class.valid]="lastScan.isValid"
+      [class.invalid]="!lastScan.isValid">
+      
+      <div class="result-icon">
+        {{ lastScan.isValid ? '✅' : '❌' }}
+      </div>
+      
+      <div class="result-status">
+        {{ lastScan.isValid ? 'VALID SCAN' : 'INVALID SCAN' }}
+      </div>
+      
+      <div class="result-details">
+        <div class="detail-row">
+          <span class="detail-label">Container ID:</span>
+          <span class="detail-value">{{ lastScan.containerId }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="detail-label">Expected Location:</span>
+          <span class="detail-value">{{ lastScan.expectedLocation }}</span>
+        </div>
+        
+        @if (lastScan.actualLocation) {
+          <div class="detail-row">
+            <span class="detail-label">Scanned Location:</span>
+            <span class="detail-value">{{ lastScan.actualLocation }}</span>
+          </div>
+        }
+        
+        <div class="detail-row">
+          <span class="detail-label">Timestamp:</span>
+          <span class="detail-value">{{ formatTime(lastScan.timestamp) }}</span>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="no-scan">
+      <p>No scans yet</p>
+      <p class="hint">Click "Simulate Scan" to test the system</p>
+    </div>
+  }
+
+  @if (scanHistory.length > 0) {
+    <div class="scan-history">
+      <h3>Recent Scans</h3>
+      <div class="history-list">
+        @for (scan of scanHistory; track scan.timestamp) {
+          <div class="history-item" [class.valid]="scan.isValid">
+            <span class="history-icon">{{ scan.isValid ? '✅' : '❌' }}</span>
+            <span class="history-id">{{ scan.containerId }}</span>
+            <span class="history-time">{{ formatTime(scan.timestamp) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

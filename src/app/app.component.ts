@@ -10,7 +10,7 @@ import { VehicleSelectorComponent, Scene3dComponent, MissionPanelComponent, Rfid
     RfidValidatorComponent
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   title = 'Lift Board - Warehouse Dashboard';

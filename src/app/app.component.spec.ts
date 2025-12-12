@@ -14,16 +14,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'lift-board-app' title`, () => {
+  it(`should have the 'Lift Board - Warehouse Dashboard' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('lift-board-app');
+    expect(app.title).toEqual('Lift Board - Warehouse Dashboard');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, lift-board-app');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Lift Board - Warehouse Dashboard');
   });
 });
