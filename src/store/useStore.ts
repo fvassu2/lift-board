@@ -156,7 +156,7 @@ export const useStore = create<AppState>((set, get) => ({
   addNotification: (notification) => {
     const newNotification = {
       ...notification,
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     };
     set({ notifications: [...get().notifications, newNotification] });
     

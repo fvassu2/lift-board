@@ -19,43 +19,47 @@ export const ForkliftAnimation = () => {
   const [binsLoaded, setBinsLoaded] = useState(false);
   const currentPosRef = useRef({ ...POSITIONS.neutral });
 
-  // Determine target position based on animation state
-  const getTargetPosition = () => {
-    switch (animationState) {
-      case AnimationState.MOVING_TO_ORIGIN:
-      case AnimationState.LOADING:
-        return POSITIONS.origin;
-      case AnimationState.MOVING_TO_DEST:
-      case AnimationState.UNLOADING:
-        return POSITIONS.destination;
-      case AnimationState.RETURNING:
-      case AnimationState.COMPLETED:
-      case AnimationState.IDLE:
-      default:
-        return POSITIONS.neutral;
-    }
-  };
-
   // Update bins loaded state based on animation state
   useEffect(() => {
     if (animationState === AnimationState.LOADING) {
       const timeout = setTimeout(() => setBinsLoaded(true), 800);
       return () => clearTimeout(timeout);
-    } else if (animationState === AnimationState.UNLOADING) {
+    }
+    
+    if (animationState === AnimationState.UNLOADING) {
       const timeout = setTimeout(() => setBinsLoaded(false), 800);
       return () => clearTimeout(timeout);
-    } else if (animationState === AnimationState.MOVING_TO_ORIGIN || 
-               animationState === AnimationState.RETURNING || 
-               animationState === AnimationState.COMPLETED ||
-               animationState === AnimationState.IDLE) {
-      setBinsLoaded(false);
+    }
+    
+    if (animationState === AnimationState.MOVING_TO_ORIGIN || 
+        animationState === AnimationState.RETURNING || 
+        animationState === AnimationState.COMPLETED ||
+        animationState === AnimationState.IDLE) {
+      const timeout = setTimeout(() => setBinsLoaded(false), 0);
+      return () => clearTimeout(timeout);
     }
   }, [animationState]);
 
   // Animate forklift position
   useEffect(() => {
     const speed = 2;
-    const targetPos = getTargetPosition();
+    
+    // Determine target position based on animation state
+    const targetPos = (() => {
+      switch (animationState) {
+        case AnimationState.MOVING_TO_ORIGIN:
+        case AnimationState.LOADING:
+          return POSITIONS.origin;
+        case AnimationState.MOVING_TO_DEST:
+        case AnimationState.UNLOADING:
+          return POSITIONS.destination;
+        case AnimationState.RETURNING:
+        case AnimationState.COMPLETED:
+        case AnimationState.IDLE:
+        default:
+          return POSITIONS.neutral;
+      }
+    })();
 
     const animate = () => {
       const dx = targetPos.x - currentPosRef.current.x;
@@ -80,7 +84,6 @@ export const ForkliftAnimation = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animationState]);
 
   const renderForklift = () => {
