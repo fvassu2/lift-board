@@ -1,9 +1,28 @@
+import { useState, useEffect } from 'react';
 import { Play, CheckCircle, Flag, AlertTriangle, ArrowDown } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { MissionStatus, NotificationType } from '../../types';
 
 export const CurrentMission = () => {
   const { currentMission, startMission, completeBin, completeMission, addNotification } = useStore();
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Update elapsed time every minute
+  useEffect(() => {
+    const updateElapsed = () => {
+      if (currentMission?.startTime) {
+        const elapsed = Math.floor((Date.now() - new Date(currentMission.startTime).getTime()) / 1000 / 60);
+        setElapsedTime(elapsed);
+      } else {
+        setElapsedTime(0);
+      }
+    };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [currentMission?.startTime]);
 
   if (!currentMission) {
     return (
@@ -17,9 +36,7 @@ export const CurrentMission = () => {
     );
   }
 
-  const { article, bins, origin, destination, progress, code, type, status, startTime } = currentMission;
-  
-  const elapsedTime = startTime ? Math.floor((Date.now() - new Date(startTime).getTime()) / 1000 / 60) : 0;
+  const { article, bins, origin, destination, progress, code, type, status } = currentMission;
   const totalWeight = bins.reduce((sum, bin) => sum + bin.quantity, 0);
   const progressPercentage = (progress.completed / progress.total) * 100;
 

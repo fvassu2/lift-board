@@ -15,63 +15,61 @@ const POSITIONS = {
 export const ForkliftAnimation = () => {
   const { animationState, currentMission } = useStore();
   const animationFrameRef = useRef<number | undefined>(undefined);
-  const forkliftPosRef = useRef({ x: POSITIONS.neutral.x, y: POSITIONS.neutral.y });
-  const binsLoadedRef = useRef(false);
-  const [, setRenderTrigger] = useState(0);
+  const [forkliftPos, setForkliftPos] = useState(POSITIONS.neutral);
+  const [binsLoaded, setBinsLoaded] = useState(false);
+  const currentPosRef = useRef({ ...POSITIONS.neutral });
 
-  const forceRender = () => {
-    setRenderTrigger(prev => prev + 1);
-  };
-
-  useEffect(() => {
-    let targetPos = { ...POSITIONS.neutral };
-    let speed = 2;
-
+  // Determine target position based on animation state
+  const getTargetPosition = () => {
     switch (animationState) {
       case AnimationState.MOVING_TO_ORIGIN:
-        targetPos = POSITIONS.origin;
-        binsLoadedRef.current = false;
-        break;
       case AnimationState.LOADING:
-        targetPos = POSITIONS.origin;
-        setTimeout(() => {
-          binsLoadedRef.current = true;
-          forceRender();
-        }, 800);
-        break;
+        return POSITIONS.origin;
       case AnimationState.MOVING_TO_DEST:
-        targetPos = POSITIONS.destination;
-        break;
       case AnimationState.UNLOADING:
-        targetPos = POSITIONS.destination;
-        setTimeout(() => {
-          binsLoadedRef.current = false;
-          forceRender();
-        }, 800);
-        break;
+        return POSITIONS.destination;
       case AnimationState.RETURNING:
       case AnimationState.COMPLETED:
-        targetPos = POSITIONS.neutral;
-        binsLoadedRef.current = false;
-        break;
+      case AnimationState.IDLE:
       default:
-        targetPos = POSITIONS.neutral;
-        forkliftPosRef.current = { ...POSITIONS.neutral };
+        return POSITIONS.neutral;
     }
+  };
+
+  // Update bins loaded state based on animation state
+  useEffect(() => {
+    if (animationState === AnimationState.LOADING) {
+      const timeout = setTimeout(() => setBinsLoaded(true), 800);
+      return () => clearTimeout(timeout);
+    } else if (animationState === AnimationState.UNLOADING) {
+      const timeout = setTimeout(() => setBinsLoaded(false), 800);
+      return () => clearTimeout(timeout);
+    } else if (animationState === AnimationState.MOVING_TO_ORIGIN || 
+               animationState === AnimationState.RETURNING || 
+               animationState === AnimationState.COMPLETED ||
+               animationState === AnimationState.IDLE) {
+      setBinsLoaded(false);
+    }
+  }, [animationState]);
+
+  // Animate forklift position
+  useEffect(() => {
+    const speed = 2;
+    const targetPos = getTargetPosition();
 
     const animate = () => {
-      const dx = targetPos.x - forkliftPosRef.current.x;
-      const dy = targetPos.y - forkliftPosRef.current.y;
+      const dx = targetPos.x - currentPosRef.current.x;
+      const dy = targetPos.y - currentPosRef.current.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance > speed) {
-        forkliftPosRef.current.x += (dx / distance) * speed;
-        forkliftPosRef.current.y += (dy / distance) * speed;
-        forceRender();
+        currentPosRef.current.x += (dx / distance) * speed;
+        currentPosRef.current.y += (dy / distance) * speed;
+        setForkliftPos({ ...currentPosRef.current });
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        forkliftPosRef.current = { ...targetPos };
-        forceRender();
+        currentPosRef.current = { ...targetPos };
+        setForkliftPos({ ...targetPos });
       }
     };
 
@@ -82,12 +80,12 @@ export const ForkliftAnimation = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animationState]);
 
   const renderForklift = () => {
-    const pos = forkliftPosRef.current;
+    const pos = forkliftPos;
     const forkliftColor = '#f97316'; // orange
-    const binsLoaded = binsLoadedRef.current;
 
     return (
       <>
