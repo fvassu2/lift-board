@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+}
+
+.forklift-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.forklift-svg {
+  width: 100%;
+  height: auto;
+}
+
+// Idle state - breathing animation
+.forklift-container[data-state="idle"] {
+  .forklift-body {
+    animation: breathing 3s ease-in-out infinite;
+  }
+}
+
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+// Moving state - wheels spinning
+.forklift-container[data-state="moving"] {
+  .wheel {
+    animation: spin 1s linear infinite;
+    transform-origin: center;
+  }
+  
+  .forklift-body {
+    animation: vibrate 0.1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vibrate {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  75% {
+    transform: translateX(1px);
+  }
+}
+
+// Lifting state - forks moving up
+.forklift-container[data-state="lifting"] {
+  .forks {
+    animation: lift-up 2s ease-in-out;
+  }
+}
+
+@keyframes lift-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
+}
+
+// Lowering state - forks moving down
+.forklift-container[data-state="lowering"] {
+  .forks {
+    animation: lift-down 2s ease-in-out;
+  }
+}
+
+@keyframes lift-down {
+  0% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+// Error state - flashing red/orange
+.forklift-container[data-state="error"] {
+  animation: error-flash 0.5s ease-in-out infinite;
+  
+  .forklift-body {
+    rect {
+      animation: color-flash 0.5s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes error-flash {
+  0%, 100% {
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 10px 30px rgba(249, 115, 22, 0.5);
+  }
+}
+
+@keyframes color-flash {
+  0%, 100% {
+    fill: #ef4444;
+  }
+  50% {
+    fill: #f97316;
+  }
+}
+
+// Smooth transitions for fork movement
+.forks {
+  transition: transform 0.3s ease-out;
+}
+
+// Load appearance
+.load {
+  animation: load-appear 0.5s ease-out;
+}
+
+@keyframes load-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Battery indicator animations
+.battery-indicator {
+  rect {
+    transition: fill 0.3s ease;
+  }
+}
