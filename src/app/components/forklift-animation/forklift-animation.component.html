@@ -59,7 +59,6 @@
     <g class="battery-indicator">
       <rect x="10" y="10" width="30" height="15" fill="white" stroke="#374151" stroke-width="2" rx="2"/>
       <rect x="40" y="13" width="3" height="9" fill="#374151" rx="1"/>
-      <rect x="12" y="12" width="26" height="11" [attr.fill]="getBatteryColor()" rx="1"/>
       <rect x="12" y="12" [attr.width]="(batteryLevel / 100) * 26" height="11" [attr.fill]="getBatteryColor()" rx="1"/>
       <text x="25" y="20" font-size="8" fill="#000" text-anchor="middle" font-weight="bold">
         {{ batteryLevel }}%

@@ -12,7 +12,7 @@ export class ForkliftAnimationComponent {
   @Input() state: 'idle' | 'moving' | 'lifting' | 'lowering' | 'error' = 'idle';
   @Input() batteryLevel: number = 100; // 0-100
   @Input() loadWeight: number = 0; // kg
-  @Input() forkHeight: number = 0; // 0-100 percentuale altezza forche
+  @Input() forkHeight: number = 0; // 0-100 percentage of fork height
 
   /**
    * Get battery color based on level
