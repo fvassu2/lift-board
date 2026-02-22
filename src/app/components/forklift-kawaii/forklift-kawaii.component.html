@@ -1,0 +1,155 @@
+<div class="forklift-container" [class.direction-left]="direction === 'left'" [class.direction-right]="direction === 'right'">
+  <div class="info-panel" *ngIf="currentMission || operatorName">
+    <div class="mission" *ngIf="currentMission">📦 {{ currentMission }}</div>
+    <div class="operator" *ngIf="operatorName">👤 {{ operatorName }}</div>
+  </div>
+
+  <svg class="forklift-kawaii" 
+       [class.state-idle]="state === 'idle'"
+       [class.state-moving]="state === 'moving'"
+       [class.state-loading]="state === 'loading'"
+       [class.state-unloading]="state === 'unloading'"
+       [class.state-error]="state === 'error'"
+       [class.low-battery]="isLowBattery"
+       viewBox="0 0 300 200" 
+       xmlns="http://www.w3.org/2000/svg">
+    
+    <!-- Dust cloud for moving state -->
+    <g class="dust-cloud" *ngIf="state === 'moving'">
+      <ellipse cx="40" cy="160" rx="20" ry="8" fill="#e5e7eb" opacity="0.6"/>
+      <ellipse cx="60" cy="165" rx="15" ry="6" fill="#e5e7eb" opacity="0.4"/>
+      <ellipse cx="30" cy="168" rx="12" ry="5" fill="#e5e7eb" opacity="0.3"/>
+    </g>
+
+    <!-- Fork arms -->
+    <g class="fork-arms">
+      <rect x="30" y="140" width="8" height="35" rx="2" fill="#fcd34d"/>
+      <rect x="50" y="140" width="8" height="35" rx="2" fill="#fcd34d"/>
+      <rect x="25" y="135" width="38" height="8" rx="2" fill="#fbbf24"/>
+    </g>
+
+    <!-- Main body -->
+    <g class="body">
+      <!-- Wheels -->
+      <circle class="wheel wheel-back" cx="70" cy="175" r="15" fill="#94a3b8" stroke="#64748b" stroke-width="3"/>
+      <circle class="wheel wheel-front" cx="160" cy="175" r="15" fill="#94a3b8" stroke="#64748b" stroke-width="3"/>
+      
+      <!-- Wheel centers (rotating) -->
+      <circle cx="70" cy="175" r="5" fill="#475569"/>
+      <circle cx="160" cy="175" r="5" fill="#475569"/>
+      
+      <!-- Main chassis -->
+      <rect x="50" y="120" width="130" height="60" rx="10" fill="#fda4af" stroke="#fb7185" stroke-width="2"/>
+      
+      <!-- Cabin -->
+      <rect x="100" y="60" width="80" height="65" rx="12" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+      
+      <!-- Cabin roof -->
+      <path d="M 95 65 Q 140 45 185 65 L 180 70 L 100 70 Z" fill="#fcd34d" stroke="#f59e0b" stroke-width="2"/>
+    </g>
+
+    <!-- Face on cabin -->
+    <g class="face">
+      <!-- Blush (cheeks) - always visible -->
+      <ellipse class="blush blush-left" cx="115" cy="95" rx="8" ry="6" fill="#ff9fb8" opacity="0.6"/>
+      <ellipse class="blush blush-right" cx="165" cy="95" rx="8" ry="6" fill="#ff9fb8" opacity="0.6"/>
+      
+      <!-- Eyes - different for each state -->
+      <g class="eyes" *ngIf="state === 'idle' || state === 'moving'">
+        <!-- Normal/Determined eyes -->
+        <circle [class.blink]="isBlinking" class="eye eye-left" cx="125" cy="90" r="8" fill="#1f2937"/>
+        <circle [class.blink]="isBlinking" class="eye eye-right" cx="155" cy="90" r="8" fill="#1f2937"/>
+        <!-- Eye shine -->
+        <circle class="eye-shine" cx="127" cy="88" r="3" fill="white"/>
+        <circle class="eye-shine" cx="157" cy="88" r="3" fill="white"/>
+      </g>
+
+      <g class="eyes-concentrated" *ngIf="state === 'loading'">
+        <!-- Concentrated eyes (half-closed) -->
+        <ellipse cx="125" cy="92" rx="8" ry="4" fill="#1f2937"/>
+        <ellipse cx="155" cy="92" rx="8" ry="4" fill="#1f2937"/>
+      </g>
+
+      <g class="eyes-happy" *ngIf="state === 'unloading'">
+        <!-- Happy eyes (crescents) -->
+        <path d="M 117 90 Q 125 95 133 90" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 147 90 Q 155 95 163 90" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <g class="eyes-error" *ngIf="state === 'error'">
+        <!-- X eyes -->
+        <line x1="120" y1="85" x2="130" y2="95" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <line x1="130" y1="85" x2="120" y2="95" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <line x1="150" y1="85" x2="160" y2="95" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <line x1="160" y1="85" x2="150" y2="95" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <!-- Mouth - different for each state -->
+      <g class="mouth" *ngIf="state === 'idle'">
+        <path d="M 130 105 Q 140 110 150 105" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <g class="mouth-excited" *ngIf="state === 'moving'">
+        <path d="M 130 105 Q 140 112 150 105" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <g class="mouth-tongue" *ngIf="state === 'loading'">
+        <!-- Tongue out -->
+        <ellipse cx="140" cy="108" rx="8" ry="6" fill="#ff9fb8"/>
+        <path d="M 132 105 L 148 105" stroke="#1f2937" stroke-width="2"/>
+      </g>
+
+      <g class="mouth-big-smile" *ngIf="state === 'unloading'">
+        <path d="M 125 105 Q 140 115 155 105" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <g class="mouth-worried" *ngIf="state === 'error'">
+        <path d="M 130 110 Q 140 105 150 110" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <!-- Sweat drops -->
+      <g class="sweat-drops" *ngIf="state === 'moving'">
+        <ellipse class="sweat-drop sweat-1" cx="110" cy="85" rx="3" ry="5" fill="#93c5fd"/>
+        <ellipse class="sweat-drop sweat-2" cx="170" cy="88" rx="3" ry="5" fill="#93c5fd"/>
+      </g>
+
+      <g class="sweat-big" *ngIf="state === 'error'">
+        <ellipse cx="175" cy="80" rx="5" ry="8" fill="#93c5fd"/>
+      </g>
+
+      <!-- Low battery tired eyes -->
+      <g class="tired-overlay" *ngIf="isLowBattery && state === 'idle'">
+        <line x1="117" y1="95" x2="133" y2="95" stroke="#1f2937" stroke-width="2"/>
+        <line x1="147" y1="95" x2="163" y2="95" stroke="#1f2937" stroke-width="2"/>
+      </g>
+    </g>
+
+    <!-- Decorative elements for positive states -->
+    <g class="sparkles" *ngIf="state === 'unloading'">
+      <g class="sparkle sparkle-1">
+        <line x1="190" y1="70" x2="190" y2="80" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="185" y1="75" x2="195" y2="75" stroke="#fbbf24" stroke-width="2"/>
+      </g>
+      <g class="sparkle sparkle-2">
+        <line x1="85" y1="65" x2="85" y2="73" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="81" y1="69" x2="89" y2="69" stroke="#fbbf24" stroke-width="2"/>
+      </g>
+    </g>
+
+    <!-- Hearts for happy states -->
+    <g class="hearts" *ngIf="state === 'unloading'">
+      <path class="heart heart-1" d="M 200 100 L 203 106 L 206 100 Q 208 96 206 94 Q 204 92 203 93 Q 202 92 200 94 Q 198 96 200 100 Z" fill="#ff9fb8"/>
+      <path class="heart heart-2" d="M 75 90 L 77 95 L 79 90 Q 81 87 79 85 Q 77 83 77 84 Q 76 83 75 85 Q 73 87 75 90 Z" fill="#ff9fb8"/>
+    </g>
+
+    <!-- Battery indicator -->
+    <g class="battery-indicator">
+      <rect x="210" y="30" width="40" height="20" rx="3" fill="white" stroke="#64748b" stroke-width="2"/>
+      <rect x="250" y="35" width="5" height="10" rx="1" fill="#64748b"/>
+      <rect x="213" y="33" [attr.width]="batteryLevel * 0.34" height="14" rx="2" [attr.fill]="batteryColor"/>
+      <text x="230" y="44" font-size="10" fill="#1f2937" text-anchor="middle" font-weight="bold">{{batteryLevel}}%</text>
+    </g>
+  </svg>
+
+  <div class="state-label">{{ state.toUpperCase() }}</div>
+</div>

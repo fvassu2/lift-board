@@ -1,0 +1,254 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+}
+
+.forklift-container {
+  position: relative;
+  padding: 10px;
+  background: linear-gradient(to bottom, #fef3c7, #ddd6fe);
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+
+  &.direction-left {
+    .forklift-kawaii {
+      transform: scaleX(-1);
+    }
+
+    .battery-indicator text {
+      transform: scaleX(-1);
+    }
+  }
+}
+
+.info-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .mission, .operator {
+    margin: 4px 0;
+    color: #4b5563;
+  }
+}
+
+.forklift-kawaii {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.state-label {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #6b7280;
+  letter-spacing: 1px;
+}
+
+/* === ANIMATIONS === */
+
+/* Idle State - Breathing animation */
+.state-idle {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* Moving State - Bounce animation */
+.state-moving {
+  animation: bounce 0.5s ease-in-out infinite;
+
+  .wheel {
+    animation: rotate-wheel 0.8s linear infinite;
+  }
+
+  .dust-cloud ellipse {
+    animation: dust-puff 1s ease-out infinite;
+    
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+
+  .sweat-drop {
+    animation: sweat-fall 0.8s ease-in infinite;
+    
+    &.sweat-1 { animation-delay: 0s; }
+    &.sweat-2 { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes rotate-wheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dust-puff {
+  0% {
+    opacity: 0.6;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px) scale(1.5);
+  }
+}
+
+@keyframes sweat-fall {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+/* Loading State - Fork movement */
+.state-loading {
+  .fork-arms {
+    animation: fork-up-down 2s ease-in-out infinite;
+  }
+}
+
+@keyframes fork-up-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Unloading State - Fork movement and sparkles */
+.state-unloading {
+  .fork-arms {
+    animation: fork-down-up 2s ease-in-out infinite;
+  }
+
+  .sparkle {
+    animation: sparkle-twinkle 1.5s ease-in-out infinite;
+    
+    &.sparkle-1 { animation-delay: 0s; }
+    &.sparkle-2 { animation-delay: 0.5s; }
+  }
+
+  .heart {
+    animation: heart-float 2s ease-in-out infinite;
+    
+    &.heart-1 { animation-delay: 0s; }
+    &.heart-2 { animation-delay: 0.7s; }
+  }
+}
+
+@keyframes fork-down-up {
+  0%, 100% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% { 
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+@keyframes heart-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.5);
+  }
+}
+
+/* Error State - Shake animation */
+.state-error {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Low Battery - Tired animation */
+.low-battery {
+  .body {
+    animation: tired-sway 3s ease-in-out infinite;
+  }
+}
+
+@keyframes tired-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-1deg); }
+}
+
+/* Blinking eyes */
+.eye.blink {
+  animation: blink 0.2s ease-in-out;
+}
+
+@keyframes blink {
+  0%, 100% { 
+    transform: scaleY(1);
+  }
+  50% { 
+    transform: scaleY(0.1);
+  }
+}
+
+/* Blush pulse for extra cuteness */
+.blush {
+  animation: blush-pulse 2s ease-in-out infinite;
+}
+
+@keyframes blush-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+}
+
+/* Responsive sizing */
+@media (max-width: 768px) {
+  :host {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    max-width: 200px;
+  }
+  
+  .info-panel {
+    font-size: 10px;
+    padding: 6px;
+  }
+  
+  .state-label {
+    font-size: 12px;
+  }
+}
