@@ -1,0 +1,131 @@
+<div class="app-container">
+  <header class="header">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">Sistema di Mappatura Magazzino RFID</p>
+  </header>
+
+  <main class="main-content">
+    <div class="forklift-display">
+      <app-forklift-animation
+        [state]="forkliftState"
+        [batteryLevel]="batteryLevel"
+        [loadWeight]="loadWeight"
+        [forkHeight]="forkHeight">
+      </app-forklift-animation>
+    </div>
+
+    <div class="controls-panel">
+      <section class="control-section">
+        <h2>Stato Muletto</h2>
+        <div class="button-group">
+          <button 
+            class="state-button"
+            [class.active]="isStateActive('idle')"
+            (click)="setState('idle')">
+            <span class="icon">⏸️</span>
+            Idle
+          </button>
+          <button 
+            class="state-button"
+            [class.active]="isStateActive('moving')"
+            (click)="setState('moving')">
+            <span class="icon">🚜</span>
+            Moving
+          </button>
+          <button 
+            class="state-button"
+            [class.active]="isStateActive('lifting')"
+            (click)="setState('lifting')">
+            <span class="icon">⬆️</span>
+            Lifting
+          </button>
+          <button 
+            class="state-button"
+            [class.active]="isStateActive('lowering')"
+            (click)="setState('lowering')">
+            <span class="icon">⬇️</span>
+            Lowering
+          </button>
+          <button 
+            class="state-button error"
+            [class.active]="isStateActive('error')"
+            (click)="setState('error')">
+            <span class="icon">⚠️</span>
+            Error
+          </button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Parametri</h2>
+        
+        <div class="slider-control">
+          <label for="battery">
+            <span class="label-text">Livello Batteria:</span>
+            <span class="value">{{ batteryLevel }}%</span>
+          </label>
+          <input 
+            type="range" 
+            id="battery"
+            min="0" 
+            max="100" 
+            [(ngModel)]="batteryLevel"
+            class="slider">
+        </div>
+
+        <div class="slider-control">
+          <label for="load">
+            <span class="label-text">Peso Carico:</span>
+            <span class="value">{{ loadWeight }} kg</span>
+          </label>
+          <input 
+            type="range" 
+            id="load"
+            min="0" 
+            max="2000" 
+            step="50"
+            [(ngModel)]="loadWeight"
+            class="slider">
+        </div>
+
+        <div class="slider-control">
+          <label for="fork">
+            <span class="label-text">Altezza Forche:</span>
+            <span class="value">{{ forkHeight }}%</span>
+          </label>
+          <input 
+            type="range" 
+            id="fork"
+            min="0" 
+            max="100" 
+            [(ngModel)]="forkHeight"
+            class="slider">
+        </div>
+      </section>
+
+      <section class="info-section">
+        <h2>Informazioni</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Stato:</span>
+            <span class="info-value">{{ forkliftState.toUpperCase() }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Batteria:</span>
+            <span class="info-value" [class.warning]="batteryLevel < 50" [class.danger]="batteryLevel < 20">
+              {{ batteryLevel }}%
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Carico:</span>
+            <span class="info-value">{{ loadWeight > 0 ? loadWeight + ' kg' : 'Nessuno' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Altezza:</span>
+            <span class="info-value">{{ forkHeight }}%</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
