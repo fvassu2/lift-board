@@ -1,0 +1,56 @@
+// ── Page background ──────────────────────────────────────────────────────────
+.page-bg {
+  min-height: 100vh;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+// ── Tablet frame ─────────────────────────────────────────────────────────────
+.tablet {
+  position: relative;
+  background: #1a1a1a;
+  border-radius: 22px;
+  padding: 18px 52px 10px 18px; // extra right padding for side buttons
+  box-shadow: 0 0 0 5px #444, 0 10px 50px rgba(0, 0, 0, 0.75);
+  width: 680px;
+  max-width: 100%;
+}
+
+// Side buttons (right edge)
+.side-btn {
+  position: absolute;
+  right: -12px;
+  width: 10px;
+  border-radius: 0 5px 5px 0;
+  background: #555;
+
+  &.top  { top: 70px;  height: 36px; }
+  &.mid  { top: 118px; height: 36px; }
+  &.bot  { top: 166px; height: 36px; }
+  &.orange {
+    top: 214px;
+    height: 36px;
+    background: #f90;
+    box-shadow: 0 0 6px #f90;
+  }
+}
+
+// Screen bezel
+.bezel {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+// Brand plate under screen
+.brand-plate {
+  text-align: center;
+  color: #888;
+  font-size: 12px;
+  letter-spacing: 3px;
+  font-style: italic;
+  padding: 6px 0 2px;
+}

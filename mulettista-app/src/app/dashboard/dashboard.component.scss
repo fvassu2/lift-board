@@ -1,0 +1,240 @@
+@use '@angular/material' as mat;
+
+// ── Variables ────────────────────────────────────────────────────────────────
+$border-radius: 8px;
+$light-size: 22px;
+$light-dim-red: #5a1a1a;
+$light-dim-yellow: #5a4510;
+$light-dim-green: #1a4a2a;
+$light-red: #e53935;
+$light-yellow: #f9a825;
+$light-green: #2e7d32;
+
+// ── Screen container ─────────────────────────────────────────────────────────
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px 14px;
+  background: #fff;
+  border-radius: $border-radius;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  .product-img {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding-top: 4px;
+
+    .product-code {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .product-supplier {
+      font-size: 13px;
+      color: #444;
+      margin-top: 2px;
+    }
+  }
+
+  // Traffic light
+  .traffic-light {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 6px 7px;
+    flex-shrink: 0;
+    border: 2px solid #333;
+
+    .light {
+      width: $light-size;
+      height: $light-size;
+      border-radius: 50%;
+      transition: background 0.25s, box-shadow 0.25s;
+
+      &.red    { background: $light-dim-red; }
+      &.yellow { background: $light-dim-yellow; }
+      &.green  { background: $light-dim-green; }
+
+      &.red.active    { background: $light-red;    box-shadow: 0 0 8px $light-red; }
+      &.yellow.active { background: $light-yellow; box-shadow: 0 0 8px $light-yellow; }
+      &.green.active  { background: $light-green;  box-shadow: 0 0 10px $light-green; }
+    }
+  }
+}
+
+// ── Route ────────────────────────────────────────────────────────────────────
+.route {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 2px;
+
+  .route-label {
+    font-size: 40px;
+    font-weight: 900;
+    color: #111;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .route-arrow {
+    font-size: 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+    color: #111;
+  }
+}
+
+// ── Info row ─────────────────────────────────────────────────────────────────
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .counter-box {
+    border: 3px solid #111;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111;
+    min-width: 96px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .forklift-img {
+    width: 88px;
+    height: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .pallet-count {
+    font-size: 40px;
+    font-weight: 700;
+    color: #111;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+    border: 3px solid #111;
+    border-radius: 6px;
+    padding: 8px 14px;
+  }
+
+  .bins-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: auto;
+
+    .bin-item {
+      border: 2px solid #111;
+      border-radius: 4px;
+      padding: 3px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      text-align: center;
+      min-width: 108px;
+    }
+  }
+}
+
+// ── Footer row ───────────────────────────────────────────────────────────────
+.footer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  .device-label {
+    border: 2px solid #111;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+    align-self: flex-end;
+  }
+
+  .note-box {
+    background: #ffe000;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    flex: 1;
+    min-width: 0;
+    transition: background 0.3s;
+
+    &.completed {
+      background: #c8e6c9;
+      color: #1b5e20;
+    }
+  }
+
+  .confirm-btn {
+    flex-shrink: 0;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+    padding: 0 24px !important;
+    height: 48px !important;
+    border-radius: 30px !important;
+    text-transform: uppercase;
+
+    // Override Material primary to green
+    --mdc-fab-container-color: #2e7d32;
+    --mdc-fab-icon-color: #fff;
+    --mat-fab-foreground-color: #fff;
+    color: #fff !important;
+
+    mat-icon {
+      font-size: 22px !important;
+      margin-left: 4px;
+    }
+  }
+}
+
+// ── Brand bar ────────────────────────────────────────────────────────────────
+.brand-bar {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  letter-spacing: 2px;
+  font-style: italic;
+  padding-top: 2px;
+}

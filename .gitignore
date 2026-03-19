@@ -1,1 +1,4 @@
 .angular/
+mulettista-app/.angular/
+mulettista-app/node_modules/
+mulettista-app/dist/

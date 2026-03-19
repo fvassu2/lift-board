@@ -1,0 +1,70 @@
+<div class="screen">
+  <!-- ─── HEADER ─────────────────────────────────── -->
+  <div class="header">
+    <img class="product-img" src="assets/peach.svg" alt="Prodotto" aria-hidden="true" />
+
+    <div class="product-info">
+      <span class="product-code">{{ task.productCode }}</span>
+      <span class="product-name">{{ task.productName }}</span>
+      <span class="product-supplier">{{ task.supplier }}</span>
+    </div>
+
+    <!-- Traffic light -->
+    <div class="traffic-light" role="status" [attr.aria-label]="'Semaforo: ' + activeLight()">
+      <span class="light red"    [class.active]="activeLight() === 'red'"></span>
+      <span class="light yellow" [class.active]="activeLight() === 'yellow'"></span>
+      <span class="light green"  [class.active]="activeLight() === 'green'"></span>
+    </div>
+  </div>
+
+  <mat-divider />
+
+  <!-- ─── ROUTE ─────────────────────────────────── -->
+  <div class="route">
+    <span class="route-label">{{ task.origin }}</span>
+    <mat-icon class="route-arrow">arrow_forward</mat-icon>
+    <span class="route-label">{{ task.destination }}</span>
+  </div>
+
+  <!-- ─── INFO ROW ─────────────────────────────── -->
+  <div class="info-row">
+    <div class="counter-box" [attr.aria-label]="'Consegnati: ' + counterLabel()">
+      {{ counterLabel() }}
+    </div>
+
+    <img class="forklift-img" src="assets/forklift.svg" alt="Muletto" aria-hidden="true" />
+
+    <div class="pallet-count" aria-label="Numero pallet">
+      {{ task.pallets }}
+    </div>
+
+    <div class="bins-list">
+      @for (bin of task.bins; track bin.label) {
+        <div class="bin-item">{{ bin.label }}</div>
+      }
+    </div>
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────── -->
+  <div class="footer-row">
+    <div class="device-label">{{ task.device }}</div>
+    <div class="note-box" [class.completed]="isCompleted()">
+      {{ noteText() }}
+    </div>
+    <button
+      mat-fab
+      extended
+      color="primary"
+      class="confirm-btn"
+      [disabled]="isCompleted()"
+      [attr.aria-label]="'Conferma consegna ' + counterLabel()"
+      (click)="confirm()"
+    >
+      CONFIRM
+      <mat-icon>play_arrow</mat-icon>
+    </button>
+  </div>
+
+  <!-- ─── BRAND BAR ─────────────────────────────── -->
+  <div class="brand-bar">✶ thesi</div>
+</div>

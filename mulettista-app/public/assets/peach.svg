@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- leaf -->
+  <ellipse cx="60" cy="18" rx="18" ry="8" fill="#4caf50" transform="rotate(-30 60 18)"/>
+  <!-- peach body -->
+  <circle cx="48" cy="58" r="36" fill="#ffb74d"/>
+  <!-- blush -->
+  <circle cx="60" cy="50" r="22" fill="#ef5350" opacity="0.35"/>
+  <!-- cleft line -->
+  <path d="M48 22 Q54 50 48 88" stroke="#e65100" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

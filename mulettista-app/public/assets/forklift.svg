@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
+  <!-- body -->
+  <rect x="10" y="30" width="90" height="55" rx="6" fill="#555"/>
+  <!-- cabin -->
+  <rect x="60" y="10" width="40" height="40" rx="4" fill="#777"/>
+  <!-- cabin window -->
+  <rect x="66" y="15" width="28" height="22" rx="3" fill="#b3e5fc"/>
+  <!-- mast / forks -->
+  <rect x="2" y="18" width="14" height="68" rx="3" fill="#888"/>
+  <rect x="2" y="55" width="50" height="7" rx="2" fill="#999"/>
+  <rect x="2" y="67" width="50" height="7" rx="2" fill="#999"/>
+  <!-- pallet on forks (green) -->
+  <rect x="6" y="42" width="46" height="12" rx="2" fill="#388e3c"/>
+  <rect x="6" y="44" width="46" height="2" fill="#2e7d32" opacity="0.5"/>
+  <!-- exhaust stack -->
+  <rect x="90" y="5" width="8" height="20" rx="3" fill="#666"/>
+  <!-- rear wheel -->
+  <circle cx="90" cy="90" r="14" fill="#333"/>
+  <circle cx="90" cy="90" r="7"  fill="#555"/>
+  <!-- front wheel -->
+  <circle cx="30" cy="90" r="16" fill="#333"/>
+  <circle cx="30" cy="90" r="8"  fill="#555"/>
+  <!-- counter-weight bump -->
+  <rect x="95" y="50" width="22" height="38" rx="6" fill="#444"/>
+</svg>
