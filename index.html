@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cruscotto Mulettista</title>
+  <style>
+    /* ---------- Reset / Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* ---------- Tablet frame ---------- */
+    .tablet {
+      background: #1a1a1a;
+      border-radius: 22px;
+      padding: 18px 14px 18px 14px;
+      box-shadow: 0 0 0 4px #444, 0 8px 40px rgba(0,0,0,.7);
+      width: 660px;
+      position: relative;
+    }
+
+    /* side buttons */
+    .tablet::before {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 80px;
+      width: 8px;
+      height: 34px;
+      background: #555;
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 44px 0 #555, 0 88px 0 #555, 0 132px 0 #f90;
+    }
+
+    /* ---------- Screen ---------- */
+    .screen {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      padding: 16px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ---------- Header row ---------- */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .product-icon {
+      font-size: 52px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: bold;
+      color: #111;
+    }
+
+    .product-supplier {
+      font-size: 13px;
+      color: #333;
+      margin-top: 3px;
+    }
+
+    /* ---------- Traffic light ---------- */
+    .traffic-light {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: #222;
+      border-radius: 8px;
+      padding: 6px 7px;
+      flex-shrink: 0;
+    }
+
+    .light {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #444;
+    }
+    .light.red   { background: #c0392b; box-shadow: 0 0 4px #c0392b; }
+    .light.yellow { background: #f39c12; }
+    .light.green  { background: #27ae60; box-shadow: 0 0 8px #2ecc71; }
+
+    /* active state helpers (toggled by JS) */
+    .light.red.off    { background: #5a1a1a; box-shadow: none; }
+    .light.yellow.off { background: #5a4a10; }
+    .light.green.off  { background: #1a4a2a; box-shadow: none; }
+
+    /* ---------- Route row ---------- */
+    .route {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 2px 0;
+    }
+
+    .route-label {
+      font-size: 38px;
+      font-weight: 900;
+      color: #111;
+      letter-spacing: 1px;
+    }
+
+    .route-arrow {
+      font-size: 36px;
+      color: #111;
+    }
+
+    /* ---------- Main info row ---------- */
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .counter-box {
+      border: 3px solid #111;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #111;
+      min-width: 100px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .forklift-icon {
+      font-size: 62px;
+      line-height: 1;
+    }
+
+    .pallet-count {
+      font-size: 38px;
+      font-weight: bold;
+      color: #111;
+      min-width: 40px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .bins-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .bin-item {
+      border: 2px solid #111;
+      border-radius: 4px;
+      padding: 3px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #111;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    /* ---------- Footer row ---------- */
+    .footer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .device-label {
+      border: 2px solid #111;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #111;
+      white-space: nowrap;
+      align-self: flex-end;
+      margin-top: 4px;
+    }
+
+    .note-box {
+      background: #ffe000;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #111;
+      flex: 1;
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 28px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(0,0,0,.25);
+      transition: transform .1s, box-shadow .1s;
+      flex-shrink: 0;
+    }
+
+    .confirm-btn:hover  { transform: scale(1.03); box-shadow: 0 5px 16px rgba(0,0,0,.35); }
+    .confirm-btn:active { transform: scale(.97); }
+
+    /* ---------- Brand bar ---------- */
+    .brand-bar {
+      text-align: center;
+      margin-top: 6px;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 2px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="tablet">
+  <div class="screen">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="product-icon">🍑</div>
+      <div class="product-info">
+        <div class="product-name">123456 PESCA NETTARINA P. GIALLA</div>
+        <div class="product-supplier">Forn. MARIO ROSSI</div>
+      </div>
+      <div class="traffic-light" id="trafficLight">
+        <div class="light red off"   id="lightRed"></div>
+        <div class="light yellow off" id="lightYellow"></div>
+        <div class="light green"     id="lightGreen"></div>
+      </div>
+    </div>
+
+    <!-- Route -->
+    <div class="route">
+      <span class="route-label">CELLA 1A</span>
+      <span class="route-arrow">&#10132;</span>
+      <span class="route-label">LINEA 01</span>
+    </div>
+
+    <!-- Info row -->
+    <div class="info-row">
+      <div class="counter-box" id="counter">0/10</div>
+      <div class="forklift-icon">🚜</div>
+      <div class="pallet-count" id="palletCount">3</div>
+      <div class="bins-list">
+        <div class="bin-item">BINS 300</div>
+        <div class="bin-item">BINS 352</div>
+        <div class="bin-item">BINS 353</div>
+      </div>
+    </div>
+
+    <!-- Footer row -->
+    <div class="footer-row">
+      <div class="device-label">Muletto 1</div>
+      <div class="note-box" id="noteBox">Nota: IMPILATE A 4</div>
+      <button class="confirm-btn" id="confirmBtn" aria-label="Conferma consegna">
+        CONFIRM &#9654;
+      </button>
+    </div>
+
+  </div>
+  <div class="brand-bar">&#x2736; thesi</div>
+</div>
+
+<script>
+  const LIGHT_TRANSITION_DELAY_MS = 800;
+
+  // Stato iniziale
+  const state = {
+    completed: 0,
+    total: 10,
+    pallets: 3,
+    lightStatus: 'green', // 'red' | 'yellow' | 'green'
+  };
+
+  function setLight(status) {
+    state.lightStatus = status;
+    ['Red', 'Yellow', 'Green'].forEach(c => {
+      document.getElementById('light' + c).classList.add('off');
+    });
+    document.getElementById('light' + capitalize(status)).classList.remove('off');
+  }
+
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function updateCounter() {
+    document.getElementById('counter').textContent =
+      state.completed + '/' + state.total;
+  }
+
+  function handleConfirm() {
+    if (state.completed < state.total) {
+      state.completed++;
+      updateCounter();
+      if (state.completed === state.total) {
+        setLight('red');
+        document.getElementById('noteBox').textContent = 'Completato!';
+      } else {
+        setLight('yellow');
+        setTimeout(() => setLight('green'), LIGHT_TRANSITION_DELAY_MS);
+      }
+    }
+  }
+
+  // Inizializzazione
+  setLight('green');
+  updateCounter();
+  document.getElementById('confirmBtn').addEventListener('click', handleConfirm);
+</script>
+</body>
+</html>
